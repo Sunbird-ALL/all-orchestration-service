@@ -1,0 +1,40 @@
+{
+  "name": "pointer mechanism",
+  "version": "1.0.0",
+  "description": "Test Project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.ts",
+    "start-prod": "ts-node index.ts"
+  },
+  "author": "Devendra Patil",
+  "license": "ISC",
+  "dependencies": {
+    "@types/dotenv": "^8.2.0",
+    "@types/sequelize": "^4.28.20",
+    "cluster": "^0.7.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mongoose": "^8.0.3",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.9.2",
+    "nodemon": "^3.0.2",
+    "os": "^0.1.2",
+    "reflect-metadata": "^0.2.1",
+    "sequelize": "^6.11.0",
+    "sequelize-typescript": "^2.1.6",
+    "ts-node": "^10.9.2",
+    "typeorm": "^0.3.20"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/mysql": "^2.15.26",
+    "@types/node": "^20.11.28",
+    "@types/validator": "^13.11.9",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.2"
+  }
+}
