@@ -35,6 +35,8 @@ const lessonSchema = new mongoose.Schema({
         default: Date.now
     }
 });
+
+
 // Create the Lesson model
 const Lesson = mongoose.model("Lesson", lessonSchema);
 export default Lesson;

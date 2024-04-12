@@ -13,7 +13,7 @@ class pointerController {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Pointer added", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Pointer added", null));
                 }
             });
         }
@@ -29,19 +29,19 @@ class pointerController {
             const sessionID = request.params.sessionId;
             const language = request.query.language
             if (userID == "null") {
-                response.status(400).send(new HttpResponse(null, null,"userId is not be null", null,null,null));
+                response.status(400).send(new HttpResponse(null, null,"userId is not be null", null));
             }
             else if (sessionID == "null") {
-                response.status(400).send(new HttpResponse(null, null,"sessionId is not be null", null,null,null));
+                response.status(400).send(new HttpResponse(null, null,"sessionId is not be null", null));
             }
             else if (language == "null") {
-                response.status(400).send(new HttpResponse(null, null,"language is not be null", null,null,null));
+                response.status(400).send(new HttpResponse(null, null,"language is not be null", null));
             }else{
                 pointerServices.getPointersByUserID(userID,sessionID,language,(err: any, result: any) => {
                     if (err) {
                         next(new HttpException(400, err));
                     } else {
-                        response.status(200).send(new HttpResponse("GetPointer", result, "Total pointer Returned", null, null, null));
+                        response.status(200).send(new HttpResponse("GetPointer", result, "Total pointer Returned", null));
                     }
                 });
             }  

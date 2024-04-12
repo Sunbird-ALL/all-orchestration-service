@@ -25,7 +25,7 @@ class virtualIdSqlSqlService {
         } catch (err: any) {
             return next(err, "Something went wrong!");
         }
-    };
+    }
 
 }
 // function for generate random_id

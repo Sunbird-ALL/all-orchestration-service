@@ -26,7 +26,7 @@ class pointerSqlService {
     } catch (err: any) {
       return next(err, "Something went wrong!");
     }
-  };
+  }
 
 
   // SQl get pointer

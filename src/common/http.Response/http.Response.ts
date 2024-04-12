@@ -1,17 +1,13 @@
-class HttpResponse {
-    query: any;
-    result: any;
-    error: any;
-   // totalResults: any;
-   // pageNo: any;
-    message: any;
+class HttpResponse<Query, Result, Error, Message> {
+    query: Query;
+    result: Result;
+    error: Error;
+    message: Message;
 
-    constructor(query: any, result: any, message: any, error: any, totalResult: any, pageNo: any) {
+    constructor(query: Query, result: Result, message: Message, error: Error) {
         this.query = query;
         this.result = result;
         this.error = error;
-       // this.totalResults = totalResult;
-       // this.pageNo = pageNo;
         this.message = message;
     }
 }

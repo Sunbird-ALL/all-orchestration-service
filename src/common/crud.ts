@@ -19,13 +19,6 @@ class CrudOperations {
      );
    }
  
-   insertManyDocuments(
-     docs: any,
-     options: any
-   ){
-     return this.dbModel.insertMany(docs, options);
-   }
- 
    updateManyDocuments(
      query: any,
      docs: any,
@@ -34,7 +27,6 @@ class CrudOperations {
      return this.dbModel.updateMany(query, docs, options);
    }
  
-   
    getDocument(query: any, projections: any) {
      return this.dbModel.findOne(query, projections);
    }
@@ -42,19 +34,13 @@ class CrudOperations {
    getDocumentById(id: any, projections: any) {
      return this.dbModel.findById(id, projections);
    }
- 
   
    getAllDocuments(
      query: any,
-    //  projections: any,
-    //  options: any,//page,limit
      sort: any
    ) {
-     //const offset = options.limit * options.pageNo;
      return this.dbModel
-       .find(query) //projections)
-       //.skip(offset)
-       //.limit(options.limit)
+       .find(query)
        .sort(sort ? sort : { createdAt: -1})
        .lean();
    }
@@ -62,29 +48,6 @@ class CrudOperations {
    countAllDocuments(query: any) {
      //count method deprecated, will be removed in later versions
      return this.dbModel.countDocuments(query).lean();
-   }
- 
-   
-   createAndUpdateDocumentByEmail(doc: any) {
-     return this.dbModel.findOneAndUpdate({ email: doc.email }, doc, {
-       new: true,
-       upsert: true,
-     });
-   }
- 
-   upsertWithUpdateQuery(query: any ,updateQuery: any) {
-     return this.dbModel.findOneAndUpdate(query, updateQuery, {
-       upsert: true,
-       new: true,
-     });
-   }
- 
-   upsertWithReturnDocuments(query: any,updateObj: any) {
-     return this.dbModel.findOneAndUpdate(
-       query,
-       { $set: updateObj },
-       { upsert: true, new: true }
-     );
    }
  
    updateDocument(query: any, doc: any) {
@@ -99,25 +62,10 @@ class CrudOperations {
        .lean();
    }
  
-   updateAllDocuments(query: any, doc: any){
-     return this.dbModel.updateMany(query, { $set: doc }, { new: true });
-   }
- 
-   updateSubDocument(query: any, doc: any, options: any) {
-     return this.dbModel.update(query, { $push: doc }, options);
-   }
- 
    deleteDocument(query: any){
      return this.dbModel.deleteOne(query);
    }
  
-   deleteAllDocuments(query: any){
-     return this.dbModel.deleteMany(query);
-   }
- 
-   getSchema() {
-     return this.dbModel.schema;
-   }
  }
  
  export default CrudOperations;

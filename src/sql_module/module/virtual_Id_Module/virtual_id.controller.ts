@@ -16,7 +16,7 @@ class virtualIdSqlController {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Virtual_id generated", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Virtual_id generated", null));
                 }
             });
         }

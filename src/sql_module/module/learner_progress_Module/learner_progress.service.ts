@@ -12,7 +12,7 @@ class learnerProgressService {
         } catch (err: any) {
             return next(err, "Something went wrong!");
         }
-    };
+    }
 
     // Get latest learner progress by ID
     public static async getLatestLearnerProgressByuserId(id: string, next: any): Promise<learner_progress | undefined> {
