@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index.ts",
-    "start-prod": "ts-node index.ts"
+    "start-prod": "ts-node index.ts",
+    "lint": "eslint .  --ext .ts",
+    "lint-fix": "eslint --fix .  --ext .ts"
   },
   "author": "Devendra Patil",
   "license": "ISC",
@@ -34,6 +36,9 @@
     "@types/mysql": "^2.15.26",
     "@types/node": "^20.11.28",
     "@types/validator": "^13.11.9",
+    "@typescript-eslint/eslint-plugin": "^7.6.0",
+    "@typescript-eslint/parser": "^7.6.0",
+    "eslint": "8.56.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.4.2"
   }

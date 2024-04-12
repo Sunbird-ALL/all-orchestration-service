@@ -9,7 +9,7 @@ class pointerServices {
     public static async addPointer(pointer: any, next: any) {
         try {
             const newPointer = new Pointer(pointer);
-            var result = await new CrudOperations(Pointer).save(newPointer);
+            let result = await new CrudOperations(Pointer).save(newPointer);
 
             const userID = result.userId;
             const sessionID = result.sessionId;
@@ -33,7 +33,7 @@ class pointerServices {
         } catch (err: any) {
             return next(err, "Something went wrong!");
         }
-    };
+    }
 
     // get Pointers by userId
     static async getPointersByUserID(userID: any, sessionID: any,language:any, next: CallableFunction) {

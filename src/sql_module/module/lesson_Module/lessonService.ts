@@ -12,7 +12,7 @@ class lessonSqlService {
         } catch (err: any) {
             return next(err, "Something went wrong!");
         }
-    };
+    }
 
     // Sql get lesson
     static async getLessonProgress(userID: any, language: any, next: CallableFunction) {
