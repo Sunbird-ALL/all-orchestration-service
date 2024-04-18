@@ -8,8 +8,8 @@ export class virtualId {
     @Column()
     userName!: string
 
-    @Column()
-    virtualId!: number
+    @Column({ type: 'bigint' })
+    virtualId!: string
 
     @CreateDateColumn()
     createdAt!: Date;
