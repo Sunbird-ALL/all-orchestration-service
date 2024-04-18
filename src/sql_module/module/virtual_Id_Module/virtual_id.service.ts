@@ -16,7 +16,7 @@ class virtualIdSqlSqlService {
                 });
             } else {
                 const virtualID = generateRandomID();
-                const newUser = userRepository.create({ userName: lowercaseUsername, virtualId: virtualID });
+                const newUser = userRepository.create({ userName: lowercaseUsername, virtualId: virtualID.toString() });
                 await userRepository.save(newUser);
                 return next(null, {
                     virtualID: virtualID
