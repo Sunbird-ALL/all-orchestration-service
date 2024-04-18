@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from "typeorm"
 
-@Entity()
+@Entity("learnerai_virtual_id")
 export class virtualId {
     @PrimaryGeneratedColumn()
     id!: number
