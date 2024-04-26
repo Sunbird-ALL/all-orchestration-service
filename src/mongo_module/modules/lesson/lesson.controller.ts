@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-
 import lessonServices from "./lesson.services";
 import HttpException from "../../../common/http.Exception/http.Exception";
 import HttpResponse from "../../../common/http.Response/http.Response";

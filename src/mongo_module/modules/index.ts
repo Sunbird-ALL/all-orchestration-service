@@ -2,6 +2,7 @@ import { Router } from "express";
 import pointerRouter from "./pointer/pointer.router";
 import lessonRouter from "./lesson/lesson.router";
 import mongoose from "mongoose";
+import virtualIRouter from "./virtual_id/virtual_id.router";
 const MONGO_URL: string = process.env.MONGO_URL || 'mongodb://0.0.0.0:27017/lesson_points_tracker';
 
 const mongoDbRouter = Router();
@@ -9,6 +10,8 @@ const mongoDbRouter = Router();
 mongoDbRouter.use("/pointer", pointerRouter);
 
 mongoDbRouter.use("/lesson", lessonRouter);
+
+mongoDbRouter.use("/virtualId",virtualIRouter);
 
 // MongoDb connection
 export function mongodbConnection() {
