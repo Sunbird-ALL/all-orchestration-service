@@ -12,14 +12,14 @@ class virtualIdSqlSqlService {
             const existingUser = await userRepository.findOne({ where: { userName: lowercaseUsername } });
             if (existingUser) {
                 return next(null, {
-                  virtualID: existingUser.virtualId
+                    virtualID: existingUser.virtualId
                 });
             } else {
                 const virtualID = generateRandomID();
-                const newUser = userRepository.create({ userName: lowercaseUsername, virtualId: virtualID });
+                const newUser = userRepository.create({ userName: lowercaseUsername, virtualId: virtualID.toString() });
                 await userRepository.save(newUser);
                 return next(null, {
-                    virtualID : virtualID
+                    virtualID: virtualID
                 });
             }
         } catch (err: any) {
@@ -30,8 +30,6 @@ class virtualIdSqlSqlService {
 }
 // function for generate random_id
 function generateRandomID() {
-    return Math.floor(100000 + Math.random() * 900000);
+    return Math.floor(1000000000 + Math.random() * 9000000000);
 }
 export default virtualIdSqlSqlService;
-
-

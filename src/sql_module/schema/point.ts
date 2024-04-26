@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from "typeorm"
 
-@Entity()
+@Entity("learnerai_points_tracking")
 export class Point {
     @PrimaryGeneratedColumn()
     id!: number
