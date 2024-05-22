@@ -4,11 +4,9 @@ import * as dotenv from 'dotenv';
 import cluster from 'cluster';
 import os from 'os';
 import compression from 'compression'
-
-dotenv.config();
-
 import sqlRouter, { sqlDatabaseConnection } from './src/sql_module';
 import mongoDbRouter, { mongodbConnection } from './src/mongo_module/modules';
+dotenv.config();
 
 const numCPUs = os.cpus().length;
 
