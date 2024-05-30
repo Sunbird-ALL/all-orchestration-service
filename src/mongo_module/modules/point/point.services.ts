@@ -6,7 +6,7 @@ import Pointer from "../../models/pointer";
 class pointerServices {
 
     // add pointers
-    public static async addPointer(pointer: any, next: any) {
+    public static async addPoint(pointer: any, next: any) {
         try {
             const newPointer = new Pointer(pointer);
             let result = await new CrudOperations(Pointer).save(newPointer);
@@ -36,7 +36,7 @@ class pointerServices {
     }
 
     // get Pointers by userId
-    static async getPointersByUserID(userID: any, sessionID: any,language:any, next: CallableFunction) {
+    static async getPointsByUserID(userID: any, sessionID: any,language:any, next: CallableFunction) {
         try {
                 const result = await new CrudOperations(Pointer).getAllDocuments({ userId: userID }, {});
                 const totalUserPoints = result.reduce((total: any, doc: any) => total + (doc.points || 0), 0);

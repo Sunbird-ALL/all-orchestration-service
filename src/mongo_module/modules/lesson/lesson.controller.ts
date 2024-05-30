@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-
 import lessonServices from "./lesson.services";
 import HttpException from "../../../common/http.Exception/http.Exception";
 import HttpResponse from "../../../common/http.Response/http.Response";
@@ -14,14 +13,14 @@ class lessonController {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Lesson added", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Lesson added", null));
                 }
             });
         }
         catch (err) {
             next(new HttpException(400, "Something went wrong"));
         }
-    };
+    }
 
     static async getLessonProgress(request: Request, response: Response, next: NextFunction) {
         try {
@@ -33,7 +32,7 @@ class lessonController {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse("GetLessonProgress", result, "Total Lesson Progress Returned", null, null, null));
+                    response.status(200).send(new HttpResponse("GetLessonProgress", result, "Total Lesson Progress Returned", null));
                 }
             });
         } catch (err) {

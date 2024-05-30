@@ -7,7 +7,7 @@ class virtualIdSqlSqlService {
     public static async genarateId(username: any, next: CallableFunction) {
         try {
             const userRepository = myDataSource.getRepository(virtualId);
-            const lowercaseUsername = username.toLowerCase();
+            const lowercaseUsername = username.trim().toLowerCase();
 
             const existingUser = await userRepository.findOne({ where: { userName: lowercaseUsername } });
             if (existingUser) {
@@ -25,7 +25,7 @@ class virtualIdSqlSqlService {
         } catch (err: any) {
             return next(err, "Something went wrong!");
         }
-    };
+    }
 
 }
 // function for generate random_id
