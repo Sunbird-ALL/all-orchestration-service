@@ -62,5 +62,4 @@ class pointerServices {
     }
 
 }
-
 export default pointerServices;
