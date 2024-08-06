@@ -4,12 +4,12 @@ import HttpException from "../../../common/http.Exception/http.Exception";
 import HttpResponse from "../../../common/http.Response/http.Response";
 
 
-class learnerProgressController {
+class LearnerProgressController {
    
     static async createLearnerProgress(request: Request, response: Response, next: CallableFunction) {
         try {
             const learnerProgress = request.body;
-            lessonServices.createLearnerProgress(learnerProgress, (err: any, result: any) => {
+            await lessonServices.createLearnerProgress(learnerProgress, (err: any, result: any) => {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
@@ -27,7 +27,7 @@ class learnerProgressController {
             const userID = request.params.userId;
             const language = request.query.language;
            
-            lessonServices.getLessonProgress(userID,language,(err: any, result: any) => {
+            await lessonServices.getLessonProgress(userID,language,(err: any, result: any) => {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
@@ -40,4 +40,4 @@ class learnerProgressController {
         }
     }
 }
-export default learnerProgressController;
+export default LearnerProgressController;

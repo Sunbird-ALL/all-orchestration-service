@@ -3,7 +3,7 @@ import CrudOperations from "../../../common/crud";
 import LearnerProgress from "../../models/learnerProgress";
 
 
-class learnerProgressServices {
+class LearnerProgressServices {
     
     // add pointers
     public static async createLearnerProgress(learnerProgress: any, next: CallableFunction) {
@@ -34,4 +34,4 @@ class learnerProgressServices {
     }
 
 }
-export default learnerProgressServices;
+export default LearnerProgressServices;
