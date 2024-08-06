@@ -26,7 +26,6 @@ class lessonController {
         try {
             const userID = request.params.userId;
             const language = request.query.language;
-            console.log("userID----", userID);
            
             lessonServices.getLessonProgress(userID,language,(err: any, result: any) => {
                 if (err) {

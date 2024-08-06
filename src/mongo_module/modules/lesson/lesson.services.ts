@@ -19,9 +19,13 @@ class lessonServices {
     static async getLessonProgress(userID: string, language: any, next: CallableFunction) {
         try {
             let result = {};
-            const firstResult = await new CrudOperations(Lesson).getAllDocuments({ userId: userID,language: language},{createdAt: -1});
-            if(firstResult.length > 0){
-                result = firstResult[0];
+            const firstResult = await new CrudOperations(Lesson).getAllDocuments({ userId: userID,language: language},{createdAt: -1},1);
+            
+            let final = {};
+            final = firstResult[0];
+
+            if(final){
+                result = final;
             }else{
                 return next(null, "No data found for this user!");
             }
