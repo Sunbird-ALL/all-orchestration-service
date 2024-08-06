@@ -19,7 +19,7 @@ class LearnerProgressServices {
     static async getLessonProgress(userID: string, language: any, next: CallableFunction) {
         try {
             let result = {};
-            const firstResult = await new CrudOperations(LearnerProgress).getDocsWithLimit({ userId: userID,language: language},{createdAt: -1},1);
+            const firstResult = await new CrudOperations(LearnerProgress).getAllDocuments({ userId: userID,language: language},{createdAt: -1},1);
             if(firstResult.length > 0){
                 result = firstResult[0];
             }else{
