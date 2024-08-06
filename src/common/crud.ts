@@ -44,6 +44,18 @@ class CrudOperations {
        .sort(sort ? sort : { createdAt: -1})
        .lean();
    }
+
+   getDocsWithLimit(
+    query: any,
+    sort: any,
+    limit : any
+  ) {
+    return this.dbModel
+    .find(query)
+    .sort(sort ? sort : { createdAt: -1 })
+    .limit(limit)
+    .lean();
+  }
  
    countAllDocuments(query: any) {
      //count method deprecated, will be removed in later versions
