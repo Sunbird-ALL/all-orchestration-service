@@ -3,11 +3,13 @@ import mongoose from "mongoose";
 const learnerai_learner_progress = new mongoose.Schema({
     userId: {
         type: String,
-        required: true
+        required: true,
+        index: true
     },
     sessionId: {
         type: String,
-        required: true
+        required: true,
+        index: true
     },
     subSessionId: {
         type: String,
@@ -19,7 +21,8 @@ const learnerai_learner_progress = new mongoose.Schema({
     },
     language: {
         type: String,
-        required: true
+        required: true,
+        index: true
     }
 },
 {

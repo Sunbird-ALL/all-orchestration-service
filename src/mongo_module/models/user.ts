@@ -9,6 +9,7 @@ const learnerai_virtual_id = new mongoose.Schema({
     virtualId: {
         type: Number,
         required: true,
+        index: true
     },
     createdAt: {
         type: Date,
