@@ -1,16 +1,16 @@
 import { Router } from "express";
-import adaptiveLearningController from "./adaptive_learning.controller";
+import AdaptiveLearningController from "./adaptive_learning.controller";
 
 
 const adaptiveLearningRouter = Router();
 
-adaptiveLearningRouter.post("/addSchoolUdise", adaptiveLearningController.addSchoolUdise);
+adaptiveLearningRouter.post("/addSchoolUdise", AdaptiveLearningController.addSchoolUdise);
 
-adaptiveLearningRouter.get("/validateUdise/:udise_code", adaptiveLearningController.validateUdise);
+adaptiveLearningRouter.get("/validateUdise/:udise_code", AdaptiveLearningController.validateUdise);
 
-adaptiveLearningRouter.delete("/deleteByUdise/:udise_code", adaptiveLearningController.deleteUdise);
+adaptiveLearningRouter.delete("/deleteByUdise/:udise_code", AdaptiveLearningController.deleteUdise);
 
-adaptiveLearningRouter.get("/getAllUdise", adaptiveLearningController.getAllUdeise);
+adaptiveLearningRouter.get("/getAllUdise", AdaptiveLearningController.getAllUdeise);
 
 
 export default adaptiveLearningRouter;

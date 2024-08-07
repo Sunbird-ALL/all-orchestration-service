@@ -1,15 +1,15 @@
 import { NextFunction, Request, Response } from "express";
 import HttpException from "../../../common/http.Exception/http.Exception";
 import HttpResponse from "../../../common/http.Response/http.Response";
-import adaptiveLearningServices from "./adaptive_learning.service";
+import AdaptiveLearningServices from "./adaptive_learning.service";
 
 
-class adaptiveLearningController {
-   
+class AdaptiveLearningController {
+
     static async addSchoolUdise(request: Request, response: Response, next: CallableFunction) {
         try {
             const schoolData = request.body;
-            adaptiveLearningServices.addSchoolUdise(schoolData, (err: any, result: any) => {
+            await AdaptiveLearningServices.addSchoolUdise(schoolData, (err: any, result: any) => {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
@@ -26,7 +26,7 @@ class adaptiveLearningController {
         try {
             const udiseCode = request.params.udise_code;
 
-            adaptiveLearningServices.validateUdise(udiseCode,(err: any, result: any) => {
+            await AdaptiveLearningServices.validateUdise(udiseCode, (err: any, result: any) => {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
@@ -42,8 +42,7 @@ class adaptiveLearningController {
     static async deleteUdise(request: Request, response: Response, next: NextFunction) {
         try {
             const udiseCode = request.params.udise_code;
-
-            adaptiveLearningServices.deleteUdise(udiseCode,(err: any, result: any) => {
+            await AdaptiveLearningServices.deleteUdise(udiseCode, (err: any, result: any) => {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
@@ -58,7 +57,7 @@ class adaptiveLearningController {
 
     static async getAllUdeise(request: Request, response: Response, next: NextFunction) {
         try {
-            adaptiveLearningServices.getAllUdeise((err: any, result: any) => {
+            await AdaptiveLearningServices.getAllUdeise((err: any, result: any) => {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
@@ -71,4 +70,4 @@ class adaptiveLearningController {
         }
     }
 }
-export default adaptiveLearningController;
+export default AdaptiveLearningController;
