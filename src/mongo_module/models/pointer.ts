@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 // Define the User schema
-const pointerSchema = new mongoose.Schema({
+const learnerai_points_tracking = new mongoose.Schema({
     userId : {
         type: String,
         required: true,
@@ -28,7 +28,7 @@ const pointerSchema = new mongoose.Schema({
     }
 });
 // Create pointer model
-const pointer = mongoose.model("Pointer", pointerSchema);
+const pointer = mongoose.model("learnerai_points_tracking", learnerai_points_tracking);
 export default pointer;
 
 

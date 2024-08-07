@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const learnerProgressSchema = new mongoose.Schema({
+const learnerai_learner_progress = new mongoose.Schema({
     userId: {
         type: String,
         required: true
@@ -28,6 +28,6 @@ const learnerProgressSchema = new mongoose.Schema({
 });
 
 
-const learnerProgress = mongoose.model('learnerProgress', learnerProgressSchema);
+const learnerProgress = mongoose.model('learnerai_learner_progress', learnerai_learner_progress);
 
 export default learnerProgress;

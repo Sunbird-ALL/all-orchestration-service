@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 // Define the User schema
-const lessonSchema = new mongoose.Schema({
+const learnerai_lesson_tracking = new mongoose.Schema({
     userId : {
         type: String,
         required: true,
@@ -38,5 +38,5 @@ const lessonSchema = new mongoose.Schema({
 
 
 // Create the Lesson model
-const Lesson = mongoose.model("Lesson", lessonSchema);
+const Lesson = mongoose.model("learnerai_lesson_tracking", learnerai_lesson_tracking);
 export default Lesson;
