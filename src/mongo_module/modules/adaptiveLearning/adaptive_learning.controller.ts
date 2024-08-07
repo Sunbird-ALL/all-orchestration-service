@@ -41,9 +41,9 @@ class adaptiveLearningController {
 
     static async deleteUdise(request: Request, response: Response, next: NextFunction) {
         try {
-            const _id = request.params._id;
+            const udiseCode = request.params.udise_code;
 
-            adaptiveLearningServices.deleteUdise(_id,(err: any, result: any) => {
+            adaptiveLearningServices.deleteUdise(udiseCode,(err: any, result: any) => {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {

@@ -36,14 +36,14 @@ class adaptiveLearningServices {
         }
     }
 
-    public static async deleteUdise(_id: string, next: CallableFunction) {
+    public static async deleteUdise(udiseCode: string, next: CallableFunction) {
         try {
             let result = {};
-            const firstResult = await new CrudOperations(adaptiveLearning).getDocument({ _id: _id }, {});
+            const firstResult = await new CrudOperations(adaptiveLearning).getDocument({ udise_code: udiseCode }, {});
             if (!firstResult) {
                 return next(null, "No record found to delete");
             } else {
-                result = await new CrudOperations(adaptiveLearning).deleteDocument({ _id: _id });
+                result = await new CrudOperations(adaptiveLearning).deleteDocument({ udise_code: udiseCode});
                 return next(null, "record deleted successfully!");
             }
         } catch (err: any) {

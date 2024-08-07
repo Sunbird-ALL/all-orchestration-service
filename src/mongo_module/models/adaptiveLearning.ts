@@ -9,7 +9,7 @@ const adaptive_learning = new mongoose.Schema({
     },
     school_name: {
         type: String,
-        required: true,
+        required: false,
         index: true
     },
     createdAt: {
