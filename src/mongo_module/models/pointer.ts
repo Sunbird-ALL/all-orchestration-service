@@ -20,7 +20,6 @@ const learnerai_points_tracking = new mongoose.Schema({
     points: {
         type: Number,
         required: true,
-        index: true
     },
     milestone: {
         type: String,
