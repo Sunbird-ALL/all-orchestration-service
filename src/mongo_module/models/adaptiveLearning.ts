@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-// Define the User schema
+// Define the adaptive_learning schema
 const adaptive_learning = new mongoose.Schema({
     udise_code : {
         type: String,
@@ -23,6 +23,6 @@ const adaptive_learning = new mongoose.Schema({
 });
 
 
-// Create the Lesson model
-const adaptiveLearning = mongoose.model("adaptive_learning", adaptive_learning);
+// Create the adaptiveLearning model
+const adaptiveLearning = mongoose.model("learnerai_adaptive_learning", adaptive_learning);
 export default adaptiveLearning;

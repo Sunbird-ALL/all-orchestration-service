@@ -8,7 +8,7 @@ adaptiveLearningRouter.post("/addSchoolUdise", adaptiveLearningController.addSch
 
 adaptiveLearningRouter.get("/validateUdise/:udise_code", adaptiveLearningController.validateUdise);
 
-adaptiveLearningRouter.delete("/deleteUdise/:udise_code", adaptiveLearningController.deleteUdise);
+adaptiveLearningRouter.delete("/deleteByUdise/:udise_code", adaptiveLearningController.deleteUdise);
 
 adaptiveLearningRouter.get("/getAllUdise", adaptiveLearningController.getAllUdeise);
 

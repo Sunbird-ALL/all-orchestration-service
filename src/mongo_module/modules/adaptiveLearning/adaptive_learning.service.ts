@@ -5,7 +5,6 @@ import adaptiveLearning from "../../models/adaptiveLearning";
 
 class adaptiveLearningServices {
 
-    // add pointers
     public static async addSchoolUdise(schoolData: any, next: CallableFunction) {
         try {
             const newData = new adaptiveLearning(schoolData);
