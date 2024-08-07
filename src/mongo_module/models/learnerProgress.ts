@@ -1,13 +1,15 @@
 import mongoose from "mongoose";
 
-const learnerProgressSchema = new mongoose.Schema({
+const learnerai_learner_progress = new mongoose.Schema({
     userId: {
         type: String,
-        required: true
+        required: true,
+        index: true
     },
     sessionId: {
         type: String,
-        required: true
+        required: true,
+        index: true
     },
     subSessionId: {
         type: String,
@@ -19,7 +21,8 @@ const learnerProgressSchema = new mongoose.Schema({
     },
     language: {
         type: String,
-        required: true
+        required: true,
+        index: true
     }
 },
 {
@@ -28,6 +31,6 @@ const learnerProgressSchema = new mongoose.Schema({
 });
 
 
-const learnerProgress = mongoose.model('learnerProgress', learnerProgressSchema);
+const learnerProgress = mongoose.model('learnerai_learner_progress', learnerai_learner_progress);
 
 export default learnerProgress;

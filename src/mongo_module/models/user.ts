@@ -1,14 +1,16 @@
 import mongoose from "mongoose";
 
 // Define the User schema
-const virtualIdSchema = new mongoose.Schema({
+const learnerai_virtual_id = new mongoose.Schema({
     userName : {
         type: String,
         required: true,
+        index: true
     },
     virtualId: {
         type: Number,
         required: true,
+        index: true
     },
     createdAt: {
         type: Date,
@@ -16,7 +18,7 @@ const virtualIdSchema = new mongoose.Schema({
     }
 });
 // Create pointer model
-const virtualId = mongoose.model("virtualId", virtualIdSchema);
+const virtualId = mongoose.model("learnerai_virtual_id", learnerai_virtual_id);
 export default virtualId;
 
 
