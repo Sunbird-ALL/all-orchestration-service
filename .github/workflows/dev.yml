@@ -2,7 +2,7 @@ name: DEV DEPLOYMENT
 
 on:
   push:
-    branches: [ feature/udise-service ]
+    branches: [ feature/mozhigal-tracker ]
 
 jobs:
   build:
