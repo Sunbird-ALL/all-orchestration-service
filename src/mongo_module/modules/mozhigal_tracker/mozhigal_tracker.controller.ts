@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import HttpException from "../../../common/http.Exception/http.Exception";
 import HttpResponse from "../../../common/http.Response/http.Response";
 import MozhigalTrackerServices from "./mozhigal_tracker.service";
@@ -9,7 +9,6 @@ class MozhigalTrackerController {
     static async addLearningLogs(request: Request, response: Response, next: CallableFunction) {
         try {
             const learningLogsData = request.body;
-            const studentId = request.params.studentId;
             const lessonId = request.params.lessonId;
 
             await MozhigalTrackerServices.addLearningLogs(learningLogsData, lessonId, (err: any, result: any) => {
