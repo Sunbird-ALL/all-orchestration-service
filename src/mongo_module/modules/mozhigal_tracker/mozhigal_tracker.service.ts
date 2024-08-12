@@ -6,13 +6,14 @@ import emisLessonMaster from "../../models/emisLessonMaster";
 
 class MozhigalTrackerServices {
 
-    public static async addLearningLogs(learningLogsData: any, lessonId: any, next: CallableFunction) {
+    public static async addLearningLogs(learningLogsData: any, lessonId: any,studentId:any, next: CallableFunction) {
         try {
             const resultData = await new CrudOperations(emisLessonMaster).getDocument({ lesson_id: lessonId }, {});
             if (!resultData) {
                 return next(null, "No record found for this lesson_id");
             }
             learningLogsData["lesson_master_id"] = resultData.lesson_master_id;
+            learningLogsData["student_id"] = studentId;
             const newData = new learningLogs(learningLogsData);
             const result = await new CrudOperations(learningLogs).save(newData);
             return next(null, result);
