@@ -10,8 +10,9 @@ class MozhigalTrackerController {
         try {
             const learningLogsData = request.body;
             const lessonId = request.params.lessonId;
+            const studentId = request.params.studentId;
 
-            await MozhigalTrackerServices.addLearningLogs(learningLogsData, lessonId, (err: any, result: any) => {
+            await MozhigalTrackerServices.addLearningLogs(learningLogsData, lessonId,studentId, (err: any, result: any) => {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
