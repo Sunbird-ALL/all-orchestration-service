@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 // Define the emis_lessons_master schema
 const emis_lessons_master = new mongoose.Schema({
     lesson_master_id : {
-        type: String,
+        type: Number,
         required: true,
         index: true
     },
@@ -15,5 +15,5 @@ const emis_lessons_master = new mongoose.Schema({
 
 
 // Create the emis_lessons_master model
-const emisLessonsMaster = mongoose.model("emis_lessons_master", emis_lessons_master);
+const emisLessonsMaster = mongoose.model("emis_lessons_masters", emis_lessons_master);
 export default emisLessonsMaster;
