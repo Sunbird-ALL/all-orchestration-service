@@ -67,6 +67,38 @@ class CrudOperations {
    deleteDocument(query: any){
      return this.dbModel.deleteOne(query);
    }
+
+   cummumulativeScoreDocument(studentId: any){
+    return this.dbModel.aggregate([
+      { $match: { student_id: studentId } },
+      { $group: { _id: "$student_id", totalScore: { $sum: "$score" } } }
+    ]);
+   }
+
+   lessonWiseScoreDocument(studentId:any){
+    return this.dbModel.aggregate([
+      { $match: { student_id: studentId } },
+      {
+          $lookup: {
+              from: "emis_lessons_masters",
+              localField: "lesson_master_id",
+              foreignField: "lesson_master_id",
+              as: "lessonDetails"
+          }
+      },
+      { $unwind: "$lessonDetails" },
+      {
+          $project: {
+              _id: 1,
+              student_id: 1,
+              score: 1,
+              date_completed: 1,
+              lesson_master_id: 1,
+              lesson_id: "$lessonDetails.lesson_id"
+          }
+      }
+  ]);
+   }
  
  }
  
