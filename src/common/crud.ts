@@ -77,27 +77,34 @@ class CrudOperations {
 
    lessonWiseScoreDocument(studentId:any){
     return this.dbModel.aggregate([
-      { $match: { student_id: studentId } },
-      {
-          $lookup: {
-              from: "emis_lessons_masters",
-              localField: "lesson_master_id",
-              foreignField: "lesson_master_id",
-              as: "lessonDetails"
-          }
+      { 
+        $match: { student_id: studentId }
       },
-      { $unwind: "$lessonDetails" },
       {
-          $project: {
-              _id: 1,
-              student_id: 1,
-              score: 1,
-              date_completed: 1,
-              lesson_master_id: 1,
-              lesson_id: "$lessonDetails.lesson_id"
-          }
+        $group: {
+          _id: "$lesson_master_id",
+          totalScore: { $sum: "$score" }
+        }
+      },
+      {
+        $lookup: {
+          from: "emis_lessons_masters",
+          localField: "_id",
+          foreignField: "lesson_master_id",
+          as: "lessonDetails"
+        }
+      },
+      { 
+        $unwind: "$lessonDetails" 
+      },
+      {
+        $project: {
+          lesson_master_id: "$_id",
+          score: "$totalScore",
+          lesson_id: "$lessonDetails.lesson_id"
+        }
       }
-  ]);
+    ]);
    }
  
  }
