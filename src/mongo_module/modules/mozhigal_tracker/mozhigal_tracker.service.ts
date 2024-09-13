@@ -45,7 +45,7 @@ class MozhigalTrackerServices {
 
             scoreResult.forEach((scoreEle: any) => {
                     result.push({
-                        totalScore: scoreEle.totalScore,
+                        score: scoreEle.totalScore,
                         lesson_id : lessonResult[scoreEle._id]
                     });
             });
