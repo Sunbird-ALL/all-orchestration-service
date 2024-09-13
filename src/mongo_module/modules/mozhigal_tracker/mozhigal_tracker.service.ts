@@ -37,7 +37,19 @@ class MozhigalTrackerServices {
 
     public static async getLessonWiseScore(studentId: any, next: CallableFunction) {
         try {
-            const result = await new CrudOperations(learningLogs).lessonWiseScoreDocument(studentId);
+
+            const scoreResult = await new CrudOperations(learningLogs).lessonScoreDocuments(studentId);
+            const lessonResult = await new CrudOperations(emisLessonMaster).getAlllessonMasterDocuments();
+
+            let result:any = [];
+
+            scoreResult.forEach((scoreEle: any) => {
+                    result.push({
+                        totalScore: scoreEle.totalScore,
+                        lesson_id : lessonResult[scoreEle._id]
+                    });
+            });
+
             return next(null, result);
         } catch (err: any) {
             return next(err, "Something went wrong!");

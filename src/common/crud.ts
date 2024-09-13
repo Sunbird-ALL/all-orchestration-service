@@ -1,4 +1,4 @@
-
+import memoryCache from "./cacheManager";
 class CrudOperations {
     dbModel: any;
  
@@ -105,6 +105,38 @@ class CrudOperations {
         }
       }
     ]);
+   }
+
+   lessonScoreDocuments(studentId: any) {
+    return this.dbModel.aggregate([
+      { 
+        $match: { student_id: studentId }
+      },
+      {
+        $group: {
+          _id: "$lesson_master_id",
+          totalScore: { $sum: "$score" }
+        }
+      }
+      ]);
+   }
+
+   async getAlllessonMasterDocuments() {
+    let lessonDocuments = await memoryCache.get('lesson_master_data');
+
+    if (lessonDocuments) {
+      return lessonDocuments;
+    }else { 
+      const lessonMasterData = await this.dbModel.find({}).lean();
+
+      const lessonMasterObj = lessonMasterData.reduce((acc:any, item:any) => {
+        acc[item.lesson_master_id] = item.lesson_id;
+        return acc;
+      }, {});
+
+      await memoryCache.set('lesson_master_data', lessonMasterObj, 60 * 100 * 100 );
+      return lessonMasterObj;
+    }
    }
  
  }
