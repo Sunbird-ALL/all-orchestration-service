@@ -3,7 +3,7 @@ name: Prod Deployment
 on:
   push:
     branches:
-      - all-1.1-prod
+      - all-1.2-prod
 jobs:
    deploy:
     runs-on: ubuntu-latest
