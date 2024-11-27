@@ -1,4 +1,4 @@
-
+import memoryCache from "./cacheManager";
 class CrudOperations {
     dbModel: any;
  
@@ -37,14 +37,16 @@ class CrudOperations {
   
    getAllDocuments(
      query: any,
-     sort: any
+     sort: any,
+     limit: any,
    ) {
      return this.dbModel
        .find(query)
        .sort(sort ? sort : { createdAt: -1})
+       .limit(limit)
        .lean();
    }
- 
+
    countAllDocuments(query: any) {
      //count method deprecated, will be removed in later versions
      return this.dbModel.countDocuments(query).lean();
@@ -64,6 +66,77 @@ class CrudOperations {
  
    deleteDocument(query: any){
      return this.dbModel.deleteOne(query);
+   }
+
+   cummumulativeScoreDocument(studentId: any){
+    return this.dbModel.aggregate([
+      { $match: { student_id: studentId } },
+      { $group: { _id: "$student_id", totalScore: { $sum: "$score" } } }
+    ]);
+   }
+
+   lessonWiseScoreDocument(studentId:any){
+    return this.dbModel.aggregate([
+      { 
+        $match: { student_id: studentId }
+      },
+      {
+        $group: {
+          _id: "$lesson_master_id",
+          totalScore: { $sum: "$score" }
+        }
+      },
+      {
+        $lookup: {
+          from: "emis_lessons_masters",
+          localField: "_id",
+          foreignField: "lesson_master_id",
+          as: "lessonDetails"
+        }
+      },
+      { 
+        $unwind: "$lessonDetails" 
+      },
+      {
+        $project: {
+          lesson_master_id: "$_id",
+          score: "$totalScore",
+          lesson_id: "$lessonDetails.lesson_id"
+        }
+      }
+    ]);
+   }
+
+   lessonScoreDocuments(studentId: any) {
+    return this.dbModel.aggregate([
+      { 
+        $match: { student_id: studentId }
+      },
+      {
+        $group: {
+          _id: "$lesson_master_id",
+          totalScore: { $sum: "$score" }
+        }
+      }
+      ]);
+   }
+
+   async getAlllessonMasterDocuments() {
+    let lessonDocuments = await memoryCache.get('lesson_master_data');
+
+    if (lessonDocuments) {
+      return lessonDocuments;
+    }else { 
+      const lessonMasterData = await this.dbModel.find({}).lean();
+
+      const lessonMasterObj = lessonMasterData.reduce((acc:any, item:any) => {
+        acc[item.lesson_master_id] = item.lesson_id;
+        return acc;
+      }, {});
+
+      await memoryCache.set('lesson_master_data', lessonMasterObj, 60 * 100 * 100 );
+      return lessonMasterObj;
+    }
    }
  
  }
