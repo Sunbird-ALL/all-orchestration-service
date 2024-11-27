@@ -1,19 +1,19 @@
 import { NextFunction, Request, Response } from "express";
-import lessonServices from "./lesson.services";
+import learnerProgressServices from "./learner_progress.services";
 import HttpException from "../../../common/http.Exception/http.Exception";
 import HttpResponse from "../../../common/http.Response/http.Response";
 
 
-class lessonController {
+class LearnerProgressController {
    
-    static async addLesson(request: Request, response: Response, next: CallableFunction) {
+    static async createLearnerProgress(request: Request, response: Response, next: CallableFunction) {
         try {
-            const lesson = request.body;
-            lessonServices.addLesson(lesson, (err: any, result: any) => {
+            const learnerProgress = request.body;
+            await learnerProgressServices.createLearnerProgress(learnerProgress, (err: any, result: any) => {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Lesson added", null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner Progress added", null));
                 }
             });
         }
@@ -22,16 +22,16 @@ class lessonController {
         }
     }
 
-    static async getLessonProgress(request: Request, response: Response, next: NextFunction) {
+    static async learnerProgressByuserId(request: Request, response: Response, next: NextFunction) {
         try {
             const userID = request.params.userId;
             const language = request.query.language;
            
-            lessonServices.getLessonProgress(userID,language,(err: any, result: any) => {
+            await learnerProgressServices.getLessonProgress(userID,language,(err: any, result: any) => {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse("GetLessonProgress", result, "Total Lesson Progress Returned", null));
+                    response.status(200).send(new HttpResponse("GetLessonProgress", result, "Learner Progress Returned", null));
                 }
             });
         } catch (err) {
@@ -40,4 +40,4 @@ class lessonController {
         }
     }
 }
-export default lessonController;
+export default LearnerProgressController;
