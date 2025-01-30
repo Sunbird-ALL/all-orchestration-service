@@ -11,7 +11,7 @@ class AdaptiveLearningController {
             const schoolData = request.body;
             await AdaptiveLearningServices.addSchoolUdise(schoolData, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    next(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse(null, result, "School data added", null));
                 }
@@ -28,7 +28,7 @@ class AdaptiveLearningController {
 
             await AdaptiveLearningServices.validateUdise(udiseCode, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    next(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse("GetSchoolData", result, "School Data returned", null));
                 }
@@ -44,7 +44,7 @@ class AdaptiveLearningController {
             const udiseCode = request.params.udise_code;
             await AdaptiveLearningServices.deleteUdise(udiseCode, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    next(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse("DeleteSchoolData", result, "udise code deleted", null));
                 }
@@ -59,7 +59,7 @@ class AdaptiveLearningController {
         try {
             await AdaptiveLearningServices.getAllUdeise((err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    next(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse("getAllUdeise", result, "School Data returned", null));
                 }

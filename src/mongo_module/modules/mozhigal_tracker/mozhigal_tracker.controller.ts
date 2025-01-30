@@ -20,7 +20,7 @@ class MozhigalTrackerController {
 
             await MozhigalTrackerServices.addLearningLogs(learningLogsData, lessonId, studentId, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    next(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse(null, result, "New score entry created successfully", null));
                 }
@@ -37,7 +37,7 @@ class MozhigalTrackerController {
 
             await MozhigalTrackerServices.getCumulativeScore(studentId, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    next(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse(null, result, "Students Cumulative Score Returned", null));
                 }
@@ -54,7 +54,7 @@ class MozhigalTrackerController {
 
             await MozhigalTrackerServices.getLessonWiseScore(studentId, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    next(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse(null, result, "Students Cumulative Score Returned", null));
                 }

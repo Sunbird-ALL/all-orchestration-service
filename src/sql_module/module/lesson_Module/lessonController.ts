@@ -12,7 +12,7 @@ class lessonSqlController {
             const lesson = request.body;
             lessonSqlService.addLessonSql(lesson, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    next(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse(null, result, "Lesson added", null));
                 }
@@ -31,7 +31,7 @@ class lessonSqlController {
             
             lessonSqlService.getLessonProgress(userID, language, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    next(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse("GetLessonProgress", result, "Total Lesson Progress Returned", null));
                 }
