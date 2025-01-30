@@ -1,8 +1,6 @@
 import CrudOperations from "../../../common/crud";
 import learningLogs from "../../models/mozhigalScoreTracker";
 import emisLessonMaster from "../../models/emisLessonMaster";
-import { encryptData } from "../../utils/dataEncryptAndDecrypt";
-
 
 class MozhigalTrackerServices {
 
@@ -16,8 +14,6 @@ class MozhigalTrackerServices {
             learningLogsData["student_id"] = studentId;
             const newData = new learningLogs(learningLogsData);
             const result = await new CrudOperations(learningLogs).save(newData);
-
-            result.score = await encryptData(result.score);
 
             return next(null, result);
         } catch (err: any) {
