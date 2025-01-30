@@ -12,7 +12,13 @@ class MozhigalTrackerController {
             const lessonId = request.params.lessonId;
             const studentId = request.params.studentId;
 
-            await MozhigalTrackerServices.addLearningLogs(learningLogsData, lessonId,studentId, (err: any, result: any) => {
+            if (learningLogsData.score > 100) {
+                learningLogsData.score = 100
+            } else if (learningLogsData.score < 0) {
+                learningLogsData.score = 0
+            }
+
+            await MozhigalTrackerServices.addLearningLogs(learningLogsData, lessonId, studentId, (err: any, result: any) => {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
