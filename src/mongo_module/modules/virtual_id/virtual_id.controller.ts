@@ -13,7 +13,7 @@ class virtualIdController {
             }
             virtualIdService.generateId(username,(err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    next(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse(null, result, "Virtual_id generated", null));
                 }

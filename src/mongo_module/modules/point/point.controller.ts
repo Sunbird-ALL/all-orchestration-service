@@ -11,7 +11,7 @@ class pointerController {
             const pointer = request.body;
             pointerServices.addPoint(pointer, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    next(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse(null, result, "Pointer added", null));
                 }
@@ -39,7 +39,7 @@ class pointerController {
             }else{
                 pointerServices.getPointsByUserID(userID,sessionID,language,(err: any, result: any) => {
                     if (err) {
-                        next(new HttpException(400, err));
+                        next(new HttpException(400, "Something went wrong"));
                     } else {
                         response.status(200).send(new HttpResponse("GetPointer", result, "Total pointer Returned", null));
                     }
