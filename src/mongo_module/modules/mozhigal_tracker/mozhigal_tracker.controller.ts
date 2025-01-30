@@ -16,8 +16,6 @@ class MozhigalTrackerController {
                 learningLogsData.score = 100
             } else if (learningLogsData.score < 0) {
                 learningLogsData.score = 0
-            } else {
-                learningLogsData.score = learningLogsData.score
             }
 
             await MozhigalTrackerServices.addLearningLogs(learningLogsData, lessonId, studentId, (err: any, result: any) => {
