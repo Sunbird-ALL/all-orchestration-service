@@ -17,7 +17,7 @@ class lessonController {
             else{
                 lessonServices.addLesson(lesson, (err: any, result: any) => {
                     if (err) {
-                        response.status(200).send(new HttpException(400, "Something went wrong"));
+                        response.status(400).send(new HttpException(400, "Something went wrong"));
                     } else {
                         response.status(200).send(new HttpResponse(null, result, "Lesson added", null));
                     }
@@ -41,7 +41,7 @@ class lessonController {
             else {
                 lessonServices.getLessonProgress(userID,language,(err: any, result: any) => {
                     if (err) {
-                        response.status(200).send(new HttpException(400, "Something went wrong"));
+                        response.status(400).send(new HttpException(400, "Something went wrong"));
                     } else {
                         response.status(200).send(new HttpResponse("GetLessonProgress", result, "Total Lesson Progress Returned", null));
                     }
