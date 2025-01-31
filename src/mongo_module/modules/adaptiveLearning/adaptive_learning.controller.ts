@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import HttpException from "../../../common/http.Exception/http.Exception";
 import HttpResponse from "../../../common/http.Response/http.Response";
 import AdaptiveLearningServices from "./adaptive_learning.service";
+import {addSchoolUdiseValidationScheme,validateUdiseValidationScheme,deleteUdiseValidationScheme} from "../../validates/adaptive_learning.validate"
 
 
 class AdaptiveLearningController {
@@ -9,13 +10,19 @@ class AdaptiveLearningController {
     static async addSchoolUdise(request: Request, response: Response, next: CallableFunction) {
         try {
             const schoolData = request.body;
-            await AdaptiveLearningServices.addSchoolUdise(schoolData, (err: any, result: any) => {
-                if (err) {
-                    next(new HttpException(400, "Something went wrong"));
-                } else {
-                    response.status(200).send(new HttpResponse(null, result, "School data added", null));
-                }
-            });
+            const { error } = addSchoolUdiseValidationScheme.validate(request.body);
+            if(error){
+                response.status(400).send(new HttpResponse(null, null,"Required fields are missing", null));
+            }
+            else{
+                await AdaptiveLearningServices.addSchoolUdise(schoolData, (err: any, result: any) => {
+                    if (err) {
+                        next(new HttpException(400, "Something went wrong"));
+                    } else {
+                        response.status(200).send(new HttpResponse(null, result, "School data added", null));
+                    }
+                });
+            }
         }
         catch (err) {
             next(new HttpException(400, "Something went wrong"));
@@ -25,14 +32,19 @@ class AdaptiveLearningController {
     static async validateUdise(request: Request, response: Response, next: NextFunction) {
         try {
             const udiseCode = request.params.udise_code;
+            const { error } = validateUdiseValidationScheme.validate(request.params);
 
-            await AdaptiveLearningServices.validateUdise(udiseCode, (err: any, result: any) => {
-                if (err) {
-                    next(new HttpException(400, "Something went wrong"));
-                } else {
-                    response.status(200).send(new HttpResponse("GetSchoolData", result, "School Data returned", null));
-                }
-            });
+            if(error){
+                response.status(400).send(new HttpResponse(null, null,"Required fields are missing", null));
+            }else{
+                await AdaptiveLearningServices.validateUdise(udiseCode, (err: any, result: any) => {
+                    if (err) {
+                        next(new HttpException(400, "Something went wrong"));
+                    } else {
+                        response.status(200).send(new HttpResponse("GetSchoolData", result, "School Data returned", null));
+                    }
+                });
+            }
         } catch (err) {
             next(new HttpException(400, "Something went wrong"));
         }
@@ -41,13 +53,19 @@ class AdaptiveLearningController {
     static async deleteUdise(request: Request, response: Response, next: NextFunction) {
         try {
             const udiseCode = request.params.udise_code;
-            await AdaptiveLearningServices.deleteUdise(udiseCode, (err: any, result: any) => {
-                if (err) {
-                    next(new HttpException(400, "Something went wrong"));
-                } else {
-                    response.status(200).send(new HttpResponse("DeleteSchoolData", result, "udise code deleted", null));
-                }
-            });
+            const { error } = deleteUdiseValidationScheme.validate(request.params);
+            if(error){
+                response.status(400).send(new HttpResponse(null, null,"Required fields are missing", null));
+            }
+            else{
+                await AdaptiveLearningServices.deleteUdise(udiseCode, (err: any, result: any) => {
+                    if (err) {
+                        next(new HttpException(400, "Something went wrong"));
+                    } else {
+                        response.status(200).send(new HttpResponse("DeleteSchoolData", result, "udise code deleted", null));
+                    }
+                });
+            }
         } catch (err) {
             next(new HttpException(400, "Something went wrong"));
         }

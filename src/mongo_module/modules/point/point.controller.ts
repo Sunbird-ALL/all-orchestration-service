@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { getPointsByUserIdValidationSchema } from '../../validates/point.validate';
+import { getPointsByUserIdValidationSchema, addPointValidationSchema } from '../../validates/point.validate';
 import pointerServices from "./point.services";
 import HttpException from "../../../common/http.Exception/http.Exception";
 import HttpResponse from "../../../common/http.Response/http.Response";
@@ -10,13 +10,20 @@ class pointerController {
     static async addPoint(request: Request, response: Response, next: CallableFunction) {
         try {
             const pointer = request.body;
-            pointerServices.addPoint(pointer, (err: any, result: any) => {
-                if (err) {
-                    next(new HttpException(400, "Something went wrong"));
-                } else {
-                    response.status(200).send(new HttpResponse(null, result, "Pointer added", null));
-                }
-            });
+
+            const { error } = addPointValidationSchema.validate(request.body);
+            if(error){
+                response.status(400).send(new HttpResponse(null, null,"Required fields are missing", null));
+            }
+            else{
+                pointerServices.addPoint(pointer, (err: any, result: any) => {
+                    if (err) {
+                        next(new HttpException(400, "Something went wrong"));
+                    } else {
+                        response.status(200).send(new HttpResponse(null, result, "Pointer added", null));
+                    }
+                });
+            }            
         }
         catch (err) {
             next(new HttpException(400, "Something went wrong"));
