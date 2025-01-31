@@ -10,10 +10,21 @@ const language = Joi.string()
     .valid('en', 'kn')
     .required();
 
+const milestone = Joi.string().trim().required().empty();
+const points = Joi.number().required();
+
 const getPointsByUserIdValidationSchema = Joi.object({
     userId: userId,
     sessionId: sessionId,
     language: language,
 });
 
-export { getPointsByUserIdValidationSchema };
+const addPointValidationSchema = Joi.object({
+    userId: userId,
+    sessionId: sessionId,
+    language: language,
+    milestone: milestone,
+    points: points
+});
+
+export { getPointsByUserIdValidationSchema , addPointValidationSchema};

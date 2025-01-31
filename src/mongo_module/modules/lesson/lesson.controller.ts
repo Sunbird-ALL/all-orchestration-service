@@ -3,6 +3,7 @@ import { addLessonValidationSchema, getLessonProgressValidationSchema } from '..
 import lessonServices from "./lesson.services";
 import HttpException from "../../../common/http.Exception/http.Exception";
 import HttpResponse from "../../../common/http.Response/http.Response";
+import { addLessonValidationSchema, getLessonProgressValidationSchema } from "../../validates/lesson.validate";
 
 
 class lessonController {
@@ -10,21 +11,23 @@ class lessonController {
     static async addLesson(request: Request, response: Response, next: CallableFunction) {
         try {
             const lesson = request.body;
+
             const { error } = addLessonValidationSchema.validate(request.body);
-            if (error) {
-                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
-            } else {
+            if(error){
+                response.status(400).send(new HttpResponse(null, null,"Required fields are missing", null));
+            }
+            else{
                 lessonServices.addLesson(lesson, (err: any, result: any) => {
                     if (err) {
-                        next(new HttpException(400, "Something went wrong"));
+                        response.status(200).send(new HttpException(400, "Something went wrong"));
                     } else {
                         response.status(200).send(new HttpResponse(null, result, "Lesson added", null));
                     }
                 });
-            }
+            }            
         }
         catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(200).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -32,21 +35,22 @@ class lessonController {
         try {
             const userID = request.params.userId;
             const language = request.query.language;
-            const { error } = getLessonProgressValidationSchema.validate({ ...request.params, ...request.query });
+
+            const { error } = getLessonProgressValidationSchema.validate({...request.params, ...request.query});
             if (error) {
                 response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
-            } else {
-                lessonServices.getLessonProgress(userID, language, (err: any, result: any) => {
+            }
+            else {
+                lessonServices.getLessonProgress(userID,language,(err: any, result: any) => {
                     if (err) {
-                        next(new HttpException(400, "Something went wrong"));
+                        response.status(200).send(new HttpException(400, "Something went wrong"));
                     } else {
                         response.status(200).send(new HttpResponse("GetLessonProgress", result, "Total Lesson Progress Returned", null));
                     }
                 });
             }
-        }
-        catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+        } catch (err) {
+            response.status(200).send(new HttpException(400, "Something went wrong"));
         }
     }
 }
