@@ -25,7 +25,7 @@ class AdaptiveLearningController {
             }
         }
         catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(200).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -46,7 +46,7 @@ class AdaptiveLearningController {
                 });
             }
         } catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(200).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -67,7 +67,7 @@ class AdaptiveLearningController {
                 });
             }
         } catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(200).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -75,13 +75,13 @@ class AdaptiveLearningController {
         try {
             await AdaptiveLearningServices.getAllUdeise((err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, "Something went wrong"));
+                    response.status(200).send(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse("getAllUdeise", result, "School Data returned", null));
                 }
             });
         } catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(200).send(new HttpException(400, "Something went wrong"));
         }
     }
 }
