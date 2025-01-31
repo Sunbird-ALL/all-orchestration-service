@@ -10,14 +10,14 @@ class pointerController {
             const pointer = request.body;
             pointerSqlService.addPointer(pointer, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, "Something went wrong"));
+                    response.status(200).send(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse(null, result, "Pointer added", null));
                 }
             });
         }
         catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(200).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -37,14 +37,14 @@ class pointerController {
             } else {
                 pointerSqlService.getPointersByUserID(userID, sessionID, language, (err: any, result: any) => {
                     if (err) {
-                        next(new HttpException(400, "Something went wrong"));
+                        response.status(200).send(new HttpException(400, "Something went wrong"));
                     } else {
                         response.status(200).send(new HttpResponse("GetPointer", result, "Total pointer Returned", null));
                     }
                 });
             }
         } catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(200).send(new HttpException(400, "Something went wrong"));
         }
     }
 }

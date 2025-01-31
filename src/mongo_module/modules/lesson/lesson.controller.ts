@@ -11,14 +11,14 @@ class lessonController {
             const lesson = request.body;
             lessonServices.addLesson(lesson, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, "Something went wrong"));
+                    response.status(200).send(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse(null, result, "Lesson added", null));
                 }
             });
         }
         catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(200).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -29,13 +29,13 @@ class lessonController {
            
             lessonServices.getLessonProgress(userID,language,(err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, "Something went wrong"));
+                    response.status(200).send(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse("GetLessonProgress", result, "Total Lesson Progress Returned", null));
                 }
             });
         } catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(200).send(new HttpException(400, "Something went wrong"));
         }
     }
 }

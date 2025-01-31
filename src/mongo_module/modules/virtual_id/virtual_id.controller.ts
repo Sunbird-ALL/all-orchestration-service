@@ -9,18 +9,18 @@ class virtualIdController {
         try {
             const username = request.query.username;
             if (!username) {
-                next(new HttpException(400, "Username and password are required"));
+                response.status(200).send(new HttpException(400, "Username and password are required"));
             }
             virtualIdService.generateId(username,(err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, "Something went wrong"));
+                    response.status(200).send(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse(null, result, "Virtual_id generated", null));
                 }
             });
         }
         catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(200).send(new HttpException(400, "Something went wrong"));
         }
     }
 }

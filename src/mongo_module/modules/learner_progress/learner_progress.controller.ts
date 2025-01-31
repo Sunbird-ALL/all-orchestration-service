@@ -11,14 +11,14 @@ class LearnerProgressController {
             const learnerProgress = request.body;
             await learnerProgressServices.createLearnerProgress(learnerProgress, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, "Something went wrong"));
+                    response.status(200).send(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse(null, result, "Learner Progress added", null));
                 }
             });
         }
         catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(200).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -29,13 +29,13 @@ class LearnerProgressController {
            
             await learnerProgressServices.getLessonProgress(userID,language,(err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, "Something went wrong"));
+                    response.status(200).send(new HttpException(400, "Something went wrong"));
                 } else {
                     response.status(200).send(new HttpResponse("GetLessonProgress", result, "Learner Progress Returned", null));
                 }
             });
         } catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(200).send(new HttpException(400, "Something went wrong"));
         }
     }
 }
