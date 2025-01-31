@@ -30,7 +30,6 @@ class AdaptiveLearningServices {
             }
             next(null, result);
         } catch (err) {
-            console.log("Error:", err);
             next("Something went wrong");
         }
     }
@@ -54,7 +53,6 @@ class AdaptiveLearningServices {
             const allRecord = await new CrudOperations(adaptiveLearning).getAllDocuments({}, {},{});
             next(null, allRecord);
         } catch (err) {
-            console.log("Error:", err);
             next("Something went wrong");
         }
     }

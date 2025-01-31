@@ -1,11 +1,12 @@
 import { NextFunction, Request, Response } from "express";
+import { getPointsByUserIdValidationSchema } from '../../validates/point.validate';
 import pointerServices from "./point.services";
 import HttpException from "../../../common/http.Exception/http.Exception";
 import HttpResponse from "../../../common/http.Response/http.Response";
 
 
 class pointerController {
-   
+
     static async addPoint(request: Request, response: Response, next: CallableFunction) {
         try {
             const pointer = request.body;
@@ -28,27 +29,22 @@ class pointerController {
             const userID = request.params.userId;
             const sessionID = request.params.sessionId;
             const language = request.query.language
-            if (userID == "null") {
-                response.status(400).send(new HttpResponse(null, null,"userId is not be null", null));
-            }
-            else if (sessionID == "null") {
-                response.status(400).send(new HttpResponse(null, null,"sessionId is not be null", null));
-            }
-            else if (language == "null") {
-                response.status(400).send(new HttpResponse(null, null,"language is not be null", null));
-            }else{
-                pointerServices.getPointsByUserID(userID,sessionID,language,(err: any, result: any) => {
+            
+            const { error } = getPointsByUserIdValidationSchema.validate({ ...request.params, ...request.query });
+            if (error) {
+                response.status(400).send(new HttpResponse(null, null,"Required fields are missing", null));
+            } else {
+                pointerServices.getPointsByUserID(userID, sessionID, language, (err: any, result: any) => {
                     if (err) {
                         next(new HttpException(400, "Something went wrong"));
                     } else {
                         response.status(200).send(new HttpResponse("GetPointer", result, "Total pointer Returned", null));
                     }
                 });
-            }  
+            }
         } catch (err) {
-            console.log(err);
             next(new HttpException(400, "Something went wrong"));
         }
-    }    
+    }
 }
 export default pointerController;

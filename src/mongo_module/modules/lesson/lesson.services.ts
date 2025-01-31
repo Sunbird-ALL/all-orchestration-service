@@ -32,7 +32,6 @@ class lessonServices {
             const response = {result}
             next(null, response);
         } catch (err) {
-            console.log("Error:", err);
             next("Something went wrong");
         }
     }

@@ -35,7 +35,6 @@ class lessonController {
                 }
             });
         } catch (err) {
-            console.log(err);
             next(new HttpException(400, "Something went wrong"));
         }
     }
