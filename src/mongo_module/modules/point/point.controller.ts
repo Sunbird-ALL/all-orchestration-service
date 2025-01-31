@@ -18,7 +18,7 @@ class pointerController {
             else{
                 pointerServices.addPoint(pointer, (err: any, result: any) => {
                     if (err) {
-                        next(new HttpException(400, "Something went wrong"));
+                        response.status(200).send(new HttpException(400, "Something went wrong"));
                     } else {
                         response.status(200).send(new HttpResponse(null, result, "Pointer added", null));
                     }

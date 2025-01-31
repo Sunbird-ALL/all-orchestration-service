@@ -4,13 +4,11 @@ const userId = Joi.string()
     .trim()
     .required()
     .empty();
-
 const sessionId = Joi.string().trim().required().empty();
 const language = Joi.string()
     .trim()
     .valid('en', 'kn')
     .required();
-
 const milestone = Joi.string().trim().required().empty();
 const milestoneLevel = Joi.string().trim().required().empty();
 const lesson = Joi.number().required().empty();
