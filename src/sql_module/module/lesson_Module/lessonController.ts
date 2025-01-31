@@ -19,7 +19,7 @@ class lessonSqlController {
             });
         }
         catch (err) {
-            response.status(200).send(new HttpException(400, "Something went wrong"));
+            response.status(400).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -37,7 +37,7 @@ class lessonSqlController {
                 }
             });
         } catch (err) {
-            response.status(200).send(new HttpException(400, "Something went wrong"));
+            response.status(400).send(new HttpException(400, "Something went wrong"));
         }
     }
 
