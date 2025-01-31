@@ -3,7 +3,6 @@ import { addLessonValidationSchema, getLessonProgressValidationSchema } from '..
 import lessonServices from "./lesson.services";
 import HttpException from "../../../common/http.Exception/http.Exception";
 import HttpResponse from "../../../common/http.Response/http.Response";
-import { addLessonValidationSchema, getLessonProgressValidationSchema } from "../../validates/lesson.validate";
 
 
 class lessonController {
