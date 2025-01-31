@@ -13,7 +13,7 @@ class MozhigalTrackerController {
             const lessonId = request.params.lessonId;
             const studentId = request.params.studentId;
 
-            const { error } = addLearningLogsValidationSchema.validate({ ...request.body, ...request.params }, request.body);
+            const { error } = addLearningLogsValidationSchema.validate({ ...learningLogsData, lessonId, studentId });            
             if (error) {
                 response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
             }
