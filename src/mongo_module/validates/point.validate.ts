@@ -7,7 +7,7 @@ const userId = Joi.string()
 const sessionId = Joi.string().trim().required().empty();
 const language = Joi.string()
     .trim()
-    .valid('en', 'kn')
+    .valid('en','kn','tn','hi','gu','te')
     .required();
 
 const milestone = Joi.string().trim().required().empty();
