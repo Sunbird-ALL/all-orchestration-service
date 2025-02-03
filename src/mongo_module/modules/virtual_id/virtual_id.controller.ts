@@ -18,7 +18,7 @@ class virtualIdController {
                 if (err) {
                     response.status(400).send(new HttpException(400, "Something went wrong"));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Virtual_id generated", null));
+                    response.status(200).send(new HttpResponse(null, result, "Token generated", null));
                 }
             });
         }
