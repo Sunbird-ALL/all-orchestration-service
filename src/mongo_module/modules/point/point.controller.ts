@@ -9,9 +9,11 @@ class pointerController {
 
     static async addPoint(request: Request, response: Response, next: CallableFunction) {
         try {
+            const userId = response.locals.virtual_id;            
             const pointer = request.body;
+            pointer.userId = userId;            
 
-            const { error } = addPointValidationSchema.validate(request.body);
+            const { error } = addPointValidationSchema.validate({userId, ...request.body});
             if(error){
                 response.status(400).send(new HttpResponse(null, null,"Required fields are missing", null));
             }
@@ -33,11 +35,11 @@ class pointerController {
     // Get pointers
     static async getPointsByUserId(request: Request, response: Response, next: NextFunction) {
         try {
-            const userID = request.params.userId;
+            const userID = response.locals.virtual_id;            
             const sessionID = request.params.sessionId;
             const language = request.query.language
             
-            const { error } = getPointsByUserIdValidationSchema.validate({ ...request.params, ...request.query });
+            const { error } = getPointsByUserIdValidationSchema.validate({ userId: userID, ...request.params, ...request.query });                        
             if (error) {
                 response.status(400).send(new HttpResponse(null, null,"Required fields are missing", null));
             } else {

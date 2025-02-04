@@ -54,6 +54,7 @@ function generateRandomID() {
             // Create the JWS (JOSE) token
             const token = await new SignJWT(userData)
                 .setProtectedHeader({ alg: 'HS256' })
+                .setExpirationTime('12h')
                 .sign(new TextEncoder().encode(secretKey));
 
             return token;
