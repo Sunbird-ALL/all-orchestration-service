@@ -1,9 +1,6 @@
 import Joi from 'joi';
 
-const userId = Joi.string()
-    .trim()
-    .required()
-    .empty();
+const userId = Joi.number().integer().required();
 const sessionId = Joi.string().trim().required().empty();
 const language = Joi.string()
     .trim()

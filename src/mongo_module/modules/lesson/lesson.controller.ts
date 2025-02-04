@@ -8,7 +8,9 @@ class lessonController {
 
     static async addLesson(request: Request, response: Response, next: CallableFunction) {
         try {
+            const userID = response.locals.virtual_id;  
             const lesson = request.body;
+            lesson.userId = userID;
 
             const { error } = addLessonValidationSchema.validate(request.body);
             if(error){
@@ -31,10 +33,10 @@ class lessonController {
 
     static async getLessonProgress(request: Request, response: Response, next: NextFunction) {
         try {
-            const userID = request.params.userId;
+            const userID = response.locals.virtual_id;  
             const language = request.query.language;
 
-            const { error } = getLessonProgressValidationSchema.validate({...request.params, ...request.query});
+            const { error } = getLessonProgressValidationSchema.validate({userId:userID, ...request.query});
             if (error) {
                 response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
             }
