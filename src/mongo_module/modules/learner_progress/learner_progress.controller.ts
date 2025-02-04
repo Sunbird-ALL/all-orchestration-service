@@ -9,8 +9,12 @@ class LearnerProgressController {
 
     static async createLearnerProgress(request: Request, response: Response, next: CallableFunction) {
         try {
+            const userId = response.locals.virtual_id;            
+
             const learnerProgress = request.body;
-            const { error } = createLearnerProgressValidationSchema.validate(request.body);
+            learnerProgress.userId = userId            
+
+            const { error } = createLearnerProgressValidationSchema.validate(learnerProgress);
             if (error) {
                 response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
             } else {
@@ -30,9 +34,10 @@ class LearnerProgressController {
 
     static async learnerProgressByuserId(request: Request, response: Response, next: NextFunction) {
         try {
-            const userID = request.params.userId;
+            const userID = response.locals.virtual_id;
             const language = request.query.language;
-            const { error } = learnerProgressByuserIdValidationSchema.validate({ ...request.params, ...request.query });
+
+            const { error } = learnerProgressByuserIdValidationSchema.validate({ userId: userID, ...request.query });
             if (error) {
                 response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
             } else {

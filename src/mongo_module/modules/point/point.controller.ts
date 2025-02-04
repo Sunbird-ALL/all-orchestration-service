@@ -9,7 +9,7 @@ class pointerController {
 
     static async addPoint(request: Request, response: Response, next: CallableFunction) {
         try {
-            const userId = response.locals.virtual_id;            
+            const userId = response.locals.virtual_id;
             const pointer = request.body;
             pointer.userId = userId;            
 
