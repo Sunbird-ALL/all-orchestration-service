@@ -1,6 +1,6 @@
 import Joi from 'joi';
 
-const userId = Joi.number().integer().required();
+const userId = Joi.string().trim().required();
 const sessionId = Joi.string().trim().required().empty();
 const subSessionId = Joi.string().trim().required().empty();
 const milestoneLevel = Joi.string().trim().required().empty();
