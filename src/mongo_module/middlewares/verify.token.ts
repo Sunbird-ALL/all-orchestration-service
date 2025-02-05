@@ -10,9 +10,15 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
             return response.status(400).send(new HttpException(400, "secret key is missing"));
         }
 
-        const token = request.header('x-auth-token');
+        let token = request.header('Authorization');
         if (!token) {
-            return response.status(400).send(new HttpException(400, "x-auth-token header is missing"));
+            return response.status(400).send(new HttpException(400, "Authorization header is missing"));
+        }
+
+        if (token && token.startsWith('Bearer ')) {
+            token = token.split(' ')[1];
+        } else {
+            return response.status(400).send(new HttpException(400, "Invalid token format"));
         }
 
         const secretKey = new TextEncoder().encode(secretKeyString);
