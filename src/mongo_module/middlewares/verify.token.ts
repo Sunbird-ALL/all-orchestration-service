@@ -1,50 +1,41 @@
 import * as jose from 'jose';
 import { Request, Response, NextFunction } from 'express';
-import HttpException from "../../common/http.Exception/http.Exception";
-
 
 const verifyToken = async (request: Request, response: Response, next: NextFunction) => {
     try {
-        const secretKeyString = process.env.JOSE_SECRET?.trim();
+        const secretKeyString = process.env.JOSE_SECRET
         if (!secretKeyString) {
-            return response.status(400).send(new HttpException(400, "secret key is missing"));
+            console.error("Secret key is missing");
+            return response.status(500).json({ status: 500, error: "Server error: Secret key is missing" });
         }
 
-        let token = request.header('Authorization');
-        if (!token) {
-            return response.status(400).send(new HttpException(400, "Authorization header is missing"));
+        const authHeader = request.header('authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return response.status(401).json({ status: 401, error: "Invalid or missing token" });
         }
-
-        if (token && token.startsWith('Bearer ')) {
-            token = token.split(' ')[1];
-        } else {
-            return response.status(400).send(new HttpException(400, "Invalid token format"));
-        }
-
+        const token = authHeader.split(' ')[1];
         const secretKey = new TextEncoder().encode(secretKeyString);
         const signedToken = await jose.jwtVerify(token, secretKey);
+        const { exp, virtual_id } = signedToken.payload;
 
-        const currentTime = Math.floor(Date.now() / 1000);
-        const expirationTime = signedToken.payload.exp;
-
-        if (!expirationTime || expirationTime <= currentTime) {
-            return response.status(401).send(new HttpException(401, "Invalid Token"));
+        if (!exp || exp <= Math.floor(Date.now() / 1000)) {
+            return response.status(401).json({ status: 401, error: "Token expired" });
         }
 
-        response.locals.virtual_id = signedToken.payload.virtual_id;
+        if (!virtual_id) {
+            return response.status(400).json({ status: 400, error: "Invalid token payload: Missing virtual_id" });
+        }
+
+        response.locals.virtual_id = virtual_id;
         next();
     } catch (error) {
-        const err = error as Error;
-        if (
-            err.message === 'Invalid Compact JWS' ||
-            err.message === '"exp" claim timestamp check failed' ||
-            err.message === 'signature verification failed'
-        ) {
-            return response.status(401).send(new HttpException(401, "Invalid Token"));
-        } else {
-            return response.status(400).send(new HttpException(400, "Something went wrong"));
+        if (error instanceof jose.errors.JWTExpired) {
+            return response.status(401).json({ status: 401, error: "Token expired" });
+        } else if (error instanceof jose.errors.JWSSignatureVerificationFailed) {
+            return response.status(401).json({ status: 401, error: "Invalid token signature" });
         }
-    };
-}
 
+        return response.status(400).json({ status: 400, error: "Invalid token" });
+    }
+};
 export default verifyToken;
