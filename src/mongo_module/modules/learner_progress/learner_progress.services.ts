@@ -1,15 +1,15 @@
 
 import CrudOperations from "../../../common/crud";
-import Lesson from "../../models/lesson";
+import LearnerProgress from "../../models/learnerProgress";
 
 
-class lessonServices {
+class LearnerProgressServices {
     
     // add pointers
-    public static async addLesson(lesson: any, next: CallableFunction) {
+    public static async createLearnerProgress(learnerProgress: any, next: CallableFunction) {
         try {
-            const newLesson = new Lesson(lesson);
-            const result = await new CrudOperations(Lesson).save(newLesson);
+            const newLearnerProgress = new LearnerProgress(learnerProgress);
+            const result = await new CrudOperations(LearnerProgress).save(newLearnerProgress);
             return next(null, result);
         } catch (err: any) {
             return next(err, "Something went wrong!");
@@ -19,13 +19,9 @@ class lessonServices {
     static async getLessonProgress(userID: string, language: any, next: CallableFunction) {
         try {
             let result = {};
-            const firstResult = await new CrudOperations(Lesson).getAllDocuments({ userId: userID,language: language},{createdAt: -1},1);
-            
-            let final = {};
-            final = firstResult[0];
-
-            if(final){
-                result = final;
+            const firstResult = await new CrudOperations(LearnerProgress).getAllDocuments({ userId: userID,language: language},{createdAt: -1},1);
+            if(firstResult.length > 0){
+                result = firstResult[0];
             }else{
                 return next(null, "No data found for this user!");
             }
@@ -37,4 +33,4 @@ class lessonServices {
     }
 
 }
-export default lessonServices;
+export default LearnerProgressServices;

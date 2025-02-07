@@ -26,6 +26,7 @@ if (cluster.isPrimary) {
 } else {
   const app = express();
   const PORT: number = parseInt(process.env.PORT || '3009');
+  const HOST: string = '0.0.0.0';
   const dataBaseType: string = process.env.DATABASE_TYPE || '';
 
   // Parsing the request data
@@ -51,7 +52,7 @@ if (cluster.isPrimary) {
     });
   });
 
-  app.listen(PORT, () => {
+  app.listen(PORT,HOST, () => {
     console.log(`Worker ${process.pid} is running on port ${PORT}`);
   });
 }
