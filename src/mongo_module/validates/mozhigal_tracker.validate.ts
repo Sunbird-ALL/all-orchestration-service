@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 const score = Joi.number().min(0).max(100).required();
 const lessonId = Joi.string().trim().required().empty();
-const userId = Joi.number().integer().required();
+const userId = Joi.string().trim().required();
 
 const addLearningLogsValidationSchema = Joi.object({
     score: score,
