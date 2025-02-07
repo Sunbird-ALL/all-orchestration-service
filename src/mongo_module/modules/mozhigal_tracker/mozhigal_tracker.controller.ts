@@ -10,10 +10,9 @@ class MozhigalTrackerController {
     static async addLearningLogs(request: Request, response: Response, next: CallableFunction) {
         try {
             const studentId = response.locals.virtual_id;
-
             const learningLogsData = request.body;
             const lessonId = request.params.lessonId;
-
+            
             const { error } = addLearningLogsValidationSchema.validate({ userId: studentId, ...request.body, lessonId });
             if (error) {
                 response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
