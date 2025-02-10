@@ -2,7 +2,7 @@ name: DEV DEPLOYMENT
 
 on:
   push:
-    branches: [ feature/mozhigal-tracker ]
+    branches: [ all-1.3-tn-dev ]
 
 jobs:
   build:
