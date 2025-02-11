@@ -7,39 +7,39 @@ const Baseline_Assessment = new mongoose.Schema({
         required: true,
         index: true
     },
-    assessmentId: {
+    assessment_id: {
         type: String,
         required: true
     },
-    submissionData: {
+    submission_data: {
         type: Object,
         required: true
     },
-    emisUsername: {
+    emis_username: {
         type: String,
         required: true
     },
-    schoolName: {
+    school_name: {
         type: String,
         required: true
     },
-    studentName: {
+    student_name: {
         type: String,
         required: true
     },
-    udiseCode: {
+    udise_code: {
         type: String,
         required: true
     },
-    userInfo: {
+    user_info: {
         type: Object,
         required: false
     },
-    loginTime: {
+    login_time: {
         type: Date,
         required: false
     },
-    schoolId: {
+    school_id: {
         type: String,
         required: true
     },
