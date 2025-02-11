@@ -6,6 +6,7 @@ import pointerRouter from "./point/point.router";
 import learnerProgressRouter from "./learner_progress/learner_progress.router";
 import adaptiveLearningRouter from "./adaptiveLearning/adaptive_learning.router";
 import mozhigalTracker from "./mozhigal_tracker/mozhigal_tracker.router";
+import baselineRouter from "./baseline_assessment/baseline.router";
 
 const MONGO_URL: string = process.env.MONGO_URL || 'mongodb://0.0.0.0:27017/lesson_points_tracker';
 
@@ -22,6 +23,8 @@ mongoDbRouter.use("/learnerProgress", learnerProgressRouter);
 mongoDbRouter.use("/adaptiveLearning", adaptiveLearningRouter);
 
 mongoDbRouter.use("/tracker", mozhigalTracker);
+
+mongoDbRouter.use("/baselineAssessment", baselineRouter);
 
 // MongoDb connection
 export function mongodbConnection() {
