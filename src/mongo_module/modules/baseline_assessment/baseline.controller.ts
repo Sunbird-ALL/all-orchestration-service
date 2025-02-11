@@ -25,7 +25,7 @@ class BaselineController {
     static async getBaseline(request: Request, response: Response, next: CallableFunction) {
         try {
             const studentId = request.params.studentId;
-            const assessmentId = request.params.assessmentId;
+            const assessmentId = request.params.assessment_id;
             BaselineService.getBaseline(studentId,assessmentId, (err: any, result: any) => {
                 if (err) {
                     next(new HttpException(400, err));
