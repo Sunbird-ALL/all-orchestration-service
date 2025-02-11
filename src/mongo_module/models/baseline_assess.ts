@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 // Define the schema for baseline assessment submissions
 const Baseline_Assessment = new mongoose.Schema({
-    studentId: {
+    student_id: {
         type: String,
         required: true,
         index: true
@@ -17,11 +17,11 @@ const Baseline_Assessment = new mongoose.Schema({
     },
     emis_username: {
         type: String,
-        required: true
+        required: false
     },
     school_name: {
         type: String,
-        required: true
+        required: false
     },
     student_name: {
         type: String,
@@ -29,7 +29,7 @@ const Baseline_Assessment = new mongoose.Schema({
     },
     udise_code: {
         type: String,
-        required: true
+        required: false
     },
     user_info: {
         type: Object,
@@ -37,7 +37,7 @@ const Baseline_Assessment = new mongoose.Schema({
     },
     login_time: {
         type: Date,
-        required: false
+        required: true
     },
     school_id: {
         type: String,
