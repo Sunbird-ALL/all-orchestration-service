@@ -29,7 +29,7 @@ class lessonServices {
             }else{
                 return next(null, "No data found for this user!");
             }
-            const response = {result}
+            const response = result
             next(null, response);
         } catch (err) {
             next("Something went wrong");

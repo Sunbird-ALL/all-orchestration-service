@@ -9,10 +9,9 @@ class LearnerProgressController {
 
     static async createLearnerProgress(request: Request, response: Response, next: CallableFunction) {
         try {
-            const userId = response.locals.virtual_id;            
-
+            const userId = response.locals.virtual_id.toString();            
             const learnerProgress = request.body;
-            learnerProgress.userId = userId            
+            learnerProgress.userId = userId          
 
             const { error } = createLearnerProgressValidationSchema.validate(learnerProgress);
             if (error) {
@@ -34,7 +33,7 @@ class LearnerProgressController {
 
     static async learnerProgressByuserId(request: Request, response: Response, next: NextFunction) {
         try {
-            const userID = response.locals.virtual_id;
+            const userID = response.locals.virtual_id.toString();
             const language = request.query.language;
 
             const { error } = learnerProgressByuserIdValidationSchema.validate({ userId: userID, ...request.query });
