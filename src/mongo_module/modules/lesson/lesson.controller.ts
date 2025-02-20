@@ -8,7 +8,7 @@ class lessonController {
 
     static async addLesson(request: Request, response: Response, next: CallableFunction) {
         try {
-            const userID = response.locals.virtual_id;  
+            const userID = response.locals.virtual_id.toString();  
             const lesson = request.body;
             lesson.userId = userID;
 

@@ -9,7 +9,7 @@ class pointerController {
 
     static async addPoint(request: Request, response: Response, next: CallableFunction) {
         try {
-            const userId = response.locals.virtual_id;
+            const userId = response.locals.virtual_id.toString();
             const pointer = request.body;
             pointer.userId = userId;            
 
@@ -22,7 +22,7 @@ class pointerController {
                     if (err) {
                         response.status(400).send(new HttpException(400, "Something went wrong"));
                     } else {
-                        response.status(200).send(new HttpResponse(null, result, "Pointer added", null));
+                        response.status(200).send(new HttpResponse(null, result, "Point added", null));
                     }
                 });
             }            
@@ -35,7 +35,7 @@ class pointerController {
     // Get pointers
     static async getPointsByUserId(request: Request, response: Response, next: NextFunction) {
         try {
-            const userID = response.locals.virtual_id;            
+            const userID = response.locals.virtual_id.toString();            
             const sessionID = request.params.sessionId;
             const language = request.query.language
             

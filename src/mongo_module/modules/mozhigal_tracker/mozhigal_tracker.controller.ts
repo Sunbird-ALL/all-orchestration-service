@@ -9,13 +9,13 @@ class MozhigalTrackerController {
 
     static async addLearningLogs(request: Request, response: Response, next: CallableFunction) {
         try {
-            const studentId = response.locals.virtual_id;
+            const studentId = response.locals.virtual_id.toString();
             const learningLogsData = request.body;
             const lessonId = request.params.lessonId;
             
             const { error } = addLearningLogsValidationSchema.validate({ userId: studentId, ...request.body, lessonId });
             if (error) {
-                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
+                response.status(400).send(new HttpResponse(null, null,"Please provide the number in range", "Invalid number"));
             }
             else {
 
@@ -41,7 +41,7 @@ class MozhigalTrackerController {
 
     static async getCumulativeScore(request: Request, response: Response, next: CallableFunction) {
         try {
-            const studentId = response.locals.virtual_id;
+            const studentId = response.locals.virtual_id.toString();
 
             const { error } = getCumulativeScoreValidationSchema.validate({ userId: studentId });
             if (error) {
@@ -65,7 +65,7 @@ class MozhigalTrackerController {
 
     static async getLessonWiseScore(request: Request, response: Response, next: CallableFunction) {
         try {
-            const studentId = response.locals.virtual_id;
+            const studentId = response.locals.virtual_id.toString();
 
             const { error } = getLessonWiseScoreValidationSchema.validate({ userId: studentId });
             if (error) {
