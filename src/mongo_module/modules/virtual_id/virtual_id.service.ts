@@ -8,8 +8,24 @@ import { createHash } from "crypto";
 class virtualIdService {
 
     // MongoDB send virtual_id token
-    static async generateId(username: any, next: CallableFunction) {
+    static async generateId(username: any, version: string, next: CallableFunction) {
         try {
+            if (version === 'v1') {
+                const lowercaseUname = username.trim().toLowerCase();
+                const existingUserName = await virtualId.findOne({ userName: lowercaseUname });
+                if (existingUserName) {
+                    return next(null, {
+                        virtualID: existingUserName.virtualId
+                    });
+                } else {
+                    const virtualID = generateRandomID();
+                    const newUser = new virtualId({ userName: lowercaseUname, virtualId: virtualID });
+                    await newUser.save();
+                    return next(null, {
+                        virtualID: virtualID
+                    });
+                }
+            }
             const secret_key = process.env.JOSE_SECRET || '';
             const hash = createHash('sha256').update(secret_key).digest();
             const lowercaseUsername = username.trim().toLowerCase();
@@ -23,7 +39,7 @@ class virtualIdService {
                 const newUser = new virtualId({ userName: lowercaseUsername, virtualId: virtualID });
                 await newUser.save();
             }
-            
+
             // **Step 1: Sign the JWT Token**
             const jwtSigninKey = new TextEncoder().encode(process.env.JWT_SIGNIN_PRIVATE_KEY);
             const jwtSignedToken = await new jose.SignJWT({ virtual_id: virtualID })
@@ -31,7 +47,7 @@ class virtualIdService {
                 .setExpirationTime('30m')
                 .sign(jwtSigninKey);
 
-           
+
             // **Step 2: Encrypt the Signed JWT Token**
             const jwtEncryptedToken = await new jose.EncryptJWT({ jwtSignedToken })
                 .setProtectedHeader({ alg: 'dir', enc: 'A128CBC-HS256' })

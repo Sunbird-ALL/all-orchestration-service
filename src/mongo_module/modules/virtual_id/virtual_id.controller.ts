@@ -9,12 +9,13 @@ class virtualIdController {
     static async genarateVirtualId(request: Request, response: Response, next: CallableFunction) {
         try {
             const username = request.query.username;
-
+            const version = request.originalUrl.split("/")[1];
+        
             const { error } = genarateVirtualIdValidationSchema.validate({...request.query });
             if (error) {
                 response.status(400).send(new HttpResponse(null, null,"Required fields are missing", null));
             } else {
-                virtualIdService.generateId(username,(err: any, result: any) => {
+                virtualIdService.generateId(username,version,(err: any, result: any) => {
                 if (err) {
                     response.status(400).send(new HttpException(400, "Something went wrong"));
                 } else {
