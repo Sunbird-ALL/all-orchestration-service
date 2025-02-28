@@ -9,7 +9,7 @@ const language = Joi.string()
 const milestone = Joi.string().trim().required().empty();
 const milestoneLevel = Joi.string().trim().required().empty();
 const lesson = Joi.required().empty();
-const progress = Joi.number().required().empty();
+const progress = Joi.number().min(0).max(100).required()
 
 const addLessonValidationSchema = Joi.object({
     userId: userId,
