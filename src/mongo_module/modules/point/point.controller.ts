@@ -11,13 +11,13 @@ class pointerController {
         try {
             const userId = response.locals.virtual_id.toString();
             const pointer = request.body;
-            pointer.userId = userId;            
+            pointer.userId = userId;
 
-            const { error } = addPointValidationSchema.validate({userId, ...request.body});
-            if(error){
-                response.status(400).send(new HttpResponse(null, null,"Required fields are missing", null));
+            const { error } = addPointValidationSchema.validate({ userId, ...request.body });
+            if (error) {
+                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
             }
-            else{
+            else {
                 pointerServices.addPoint(pointer, (err: any, result: any) => {
                     if (err) {
                         response.status(400).send(new HttpException(400, "Something went wrong"));
@@ -25,7 +25,7 @@ class pointerController {
                         response.status(200).send(new HttpResponse(null, result, "Point added", null));
                     }
                 });
-            }            
+            }
         }
         catch (err) {
             response.status(400).send(new HttpException(400, "Something went wrong"));
@@ -35,15 +35,15 @@ class pointerController {
     // Get pointers
     static async getPointsByUserId(request: Request, response: Response, next: NextFunction) {
         try {
-            const userID = response.locals.virtual_id.toString();            
-            const sessionID = request.params.sessionId;
+            const userId = response.locals.virtual_id.toString();
+            const sessionId = request.params.sessionId;
             const language = request.query.language
-            
-            const { error } = getPointsByUserIdValidationSchema.validate({ userId: userID, ...request.params, ...request.query });                        
+
+            const { error } = getPointsByUserIdValidationSchema.validate({ userId: userId, sessionId, language });
             if (error) {
-                response.status(400).send(new HttpResponse(null, null,"Required fields are missing", null));
+                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
             } else {
-                pointerServices.getPointsByUserID(userID, sessionID, language, (err: any, result: any) => {
+                pointerServices.getPointsByUserID(userId, sessionId, language, (err: any, result: any) => {
                     if (err) {
                         response.status(400).send(new HttpException(400, "Something went wrong"));
                     } else {

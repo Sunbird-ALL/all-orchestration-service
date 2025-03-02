@@ -43,7 +43,8 @@ if (cluster.isPrimary) {
     app.use('/api', sqlRouter);
   } else {
     mongodbConnection();
-    app.use('/api', mongoDbRouter);
+    app.use('/v1/api', mongoDbRouter);
+    app.use('/v2/api', mongoDbRouter);
   }
 
   // App testing

@@ -4,7 +4,7 @@ const userId = Joi.number().integer().required();
 const sessionId = Joi.string().trim().required().empty();
 const language = Joi.string()
     .trim()
-    .valid('en','kn','tn','hi','gu','te' , 'or')
+    .valid('en', 'kn', 'tn', 'hi', 'gu', 'te', 'or')
     .required();
 
 const milestone = Joi.string().trim().required().empty();
@@ -24,4 +24,4 @@ const addPointValidationSchema = Joi.object({
     points: points
 });
 
-export { getPointsByUserIdValidationSchema , addPointValidationSchema};
+export { getPointsByUserIdValidationSchema, addPointValidationSchema };

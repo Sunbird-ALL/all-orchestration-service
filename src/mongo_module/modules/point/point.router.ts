@@ -1,11 +1,11 @@
 import { Router } from "express";
-import verifyToken from '../../middlewares/verify.token';
 import pointerController from "./point.controller";
+import versionedAuth from "../../middlewares/versionedAuth";
 
 const pointerRouter = Router();
 
-pointerRouter.post("/addPoints", verifyToken, pointerController.addPoint);
+pointerRouter.post("/addPoints", versionedAuth, pointerController.addPoint);
 
-pointerRouter.get("/getPoints/:sessionId", verifyToken, pointerController.getPointsByUserId);
+pointerRouter.get("/getPoints/:userId?/:sessionId", versionedAuth, pointerController.getPointsByUserId);
 
 export default pointerRouter;
