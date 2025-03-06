@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from "typeorm"
 
-@Entity({ schema: "learner_progress" })
+@Entity("learnerai_learner_progress")
 export class learner_progress {
     @PrimaryGeneratedColumn()
     id!: number

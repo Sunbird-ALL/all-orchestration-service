@@ -10,14 +10,14 @@ class pointerController {
             const pointer = request.body;
             pointerSqlService.addPointer(pointer, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    response.status(400).send(new HttpException(400, "Something went wrong"));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Pointer added", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Pointer added", null));
                 }
             });
         }
         catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(400).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -27,25 +27,24 @@ class pointerController {
             const sessionID = request.params.sessionId;
             const language = request.query.language
             if (userID == "null") {
-                response.status(400).send(new HttpResponse(null, null, "userId is not be null", null, null, null));
+                response.status(400).send(new HttpResponse(null, null, "userId is not be null", null));
             }
             else if (sessionID == "null") {
-                response.status(400).send(new HttpResponse(null, null, "sessionId is not be null", null, null, null));
+                response.status(400).send(new HttpResponse(null, null, "sessionId is not be null", null));
             }
             else if (language == "null") {
-                response.status(400).send(new HttpResponse(null, null, "language is not be null", null, null, null));
+                response.status(400).send(new HttpResponse(null, null, "language is not be null", null));
             } else {
                 pointerSqlService.getPointersByUserID(userID, sessionID, language, (err: any, result: any) => {
                     if (err) {
-                        next(new HttpException(400, err));
+                        response.status(400).send(new HttpException(400, "Something went wrong"));
                     } else {
-                        response.status(200).send(new HttpResponse("GetPointer", result, "Total pointer Returned", null, null, null));
+                        response.status(200).send(new HttpResponse("GetPointer", result, "Total pointer Returned", null));
                     }
                 });
             }
         } catch (err) {
-            console.log(err);
-            next(new HttpException(400, "Something went wrong"));
+            response.status(400).send(new HttpException(400, "Something went wrong"));
         }
     }
 }

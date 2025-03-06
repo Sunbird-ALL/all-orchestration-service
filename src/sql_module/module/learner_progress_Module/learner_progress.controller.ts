@@ -13,14 +13,14 @@ class learnerProgressSqlController {
             const lessonProgress = request.body;
             learnerProgressService.addlessonProgress(lessonProgress, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    response.status(400).send(new HttpException(400, "Something went wrong"));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Lesson added", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Lesson added", null));
                 }
             });
         }
         catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(400).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -30,13 +30,13 @@ class learnerProgressSqlController {
             const id: string = request.params.id;
             learnerProgressService.getLatestLearnerProgressByuserId(id, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    response.status(400).send(new HttpException(400, "Something went wrong"));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Latest learner progress retrieved", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Latest learner progress retrieved", null));
                 }
             });
         } catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(400).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -46,13 +46,13 @@ class learnerProgressSqlController {
             const id: number = parseInt(request.params.id);
             learnerProgressService.getLearnerProgressById(id, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    response.status(400).send(new HttpException(400, "Something went wrong"));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress retrieved", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress retrieved", null));
                 }
             });
         } catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(400).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -62,13 +62,13 @@ class learnerProgressSqlController {
             const id: string = request.params.id;
             learnerProgressService.getLearnerProgressByUserId(id, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    response.status(400).send(new HttpException(400, "Something went wrong"));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress retrieved", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress retrieved", null));
                 }
             });
         } catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(400).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -78,13 +78,13 @@ class learnerProgressSqlController {
             const id: string = request.params.id;
             learnerProgressService.getLearnerProgressBySessionId(id, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    response.status(400).send(new HttpException(400, "Something went wrong"));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress retrieved", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress retrieved", null));
                 }
             });
         } catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(400).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -94,13 +94,13 @@ class learnerProgressSqlController {
             const id: string = request.params.id;
             learnerProgressService.getLearnerProgressBySubSessionId(id, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    response.status(400).send(new HttpException(400, "Something went wrong"));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress retrieved", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress retrieved", null));
                 }
             });
         } catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(400).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -111,13 +111,13 @@ class learnerProgressSqlController {
             const newData: Partial<learner_progress> = request.body; // Assuming you provide only the fields that need to be updated
             learnerProgressService.updateLearnerProgressById(id, newData, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    response.status(400).send(new HttpException(400, "Something went wrong"));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress updated successfully", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress updated successfully", null));
                 }
             });
         } catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(400).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -128,13 +128,13 @@ class learnerProgressSqlController {
             const newData: Partial<learner_progress> = request.body; // Assuming you provide only the fields that need to be updated
             learnerProgressService.updateLearnerProgressBysubsessionId(id, newData, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    response.status(400).send(new HttpException(400, "Something went wrong"));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress updated successfully", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress updated successfully", null));
                 }
             });
         } catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(400).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -144,13 +144,13 @@ class learnerProgressSqlController {
             const id: string = request.params.id;
             learnerProgressService.deleteLearnerProgressById(id, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    response.status(400).send(new HttpException(400, "Something went wrong"));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress deleted successfully", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress deleted successfully", null));
                 }
             });
         } catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(400).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -160,13 +160,13 @@ class learnerProgressSqlController {
             const userId: string = request.params.id;
             learnerProgressService.deleteLearnerProgressByUserId(userId, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    response.status(400).send(new HttpException(400, "Something went wrong"));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress deleted successfully", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress deleted successfully", null));
                 }
             });
         } catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(400).send(new HttpException(400, "Something went wrong"));
         }
     }
 
@@ -176,13 +176,13 @@ class learnerProgressSqlController {
             const subSessionId: string = request.params.id;
             learnerProgressService.deleteLearnerProgressBySubSessionId(subSessionId, (err: any, result: any) => {
                 if (err) {
-                    next(new HttpException(400, err));
+                    response.status(400).send(new HttpException(400, "Something went wrong"));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress deleted successfully", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress deleted successfully", null));
                 }
             });
         } catch (err) {
-            next(new HttpException(400, "Something went wrong"));
+            response.status(400).send(new HttpException(400, "Something went wrong"));
         }
     }
 }

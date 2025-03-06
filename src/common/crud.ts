@@ -1,4 +1,4 @@
-
+import memoryCache from "./cacheManager";
 class CrudOperations {
     dbModel: any;
  
@@ -19,13 +19,6 @@ class CrudOperations {
      );
    }
  
-   insertManyDocuments(
-     docs: any,
-     options: any
-   ){
-     return this.dbModel.insertMany(docs, options);
-   }
- 
    updateManyDocuments(
      query: any,
      docs: any,
@@ -34,7 +27,6 @@ class CrudOperations {
      return this.dbModel.updateMany(query, docs, options);
    }
  
-   
    getDocument(query: any, projections: any) {
      return this.dbModel.findOne(query, projections);
    }
@@ -42,49 +34,22 @@ class CrudOperations {
    getDocumentById(id: any, projections: any) {
      return this.dbModel.findById(id, projections);
    }
- 
   
    getAllDocuments(
      query: any,
-    //  projections: any,
-    //  options: any,//page,limit
-     sort: any
+     sort: any,
+     limit: any,
    ) {
-     //const offset = options.limit * options.pageNo;
      return this.dbModel
-       .find(query) //projections)
-       //.skip(offset)
-       //.limit(options.limit)
+       .find(query)
        .sort(sort ? sort : { createdAt: -1})
+       .limit(limit)
        .lean();
    }
- 
+
    countAllDocuments(query: any) {
      //count method deprecated, will be removed in later versions
      return this.dbModel.countDocuments(query).lean();
-   }
- 
-   
-   createAndUpdateDocumentByEmail(doc: any) {
-     return this.dbModel.findOneAndUpdate({ email: doc.email }, doc, {
-       new: true,
-       upsert: true,
-     });
-   }
- 
-   upsertWithUpdateQuery(query: any ,updateQuery: any) {
-     return this.dbModel.findOneAndUpdate(query, updateQuery, {
-       upsert: true,
-       new: true,
-     });
-   }
- 
-   upsertWithReturnDocuments(query: any,updateObj: any) {
-     return this.dbModel.findOneAndUpdate(
-       query,
-       { $set: updateObj },
-       { upsert: true, new: true }
-     );
    }
  
    updateDocument(query: any, doc: any) {
@@ -99,25 +64,81 @@ class CrudOperations {
        .lean();
    }
  
-   updateAllDocuments(query: any, doc: any){
-     return this.dbModel.updateMany(query, { $set: doc }, { new: true });
-   }
- 
-   updateSubDocument(query: any, doc: any, options: any) {
-     return this.dbModel.update(query, { $push: doc }, options);
-   }
- 
    deleteDocument(query: any){
      return this.dbModel.deleteOne(query);
    }
- 
-   deleteAllDocuments(query: any){
-     return this.dbModel.deleteMany(query);
+
+   cummumulativeScoreDocument(studentId: any){
+    return this.dbModel.aggregate([
+      { $match: { student_id: studentId } },
+      { $group: { _id: "$student_id", totalScore: { $sum: "$score" } } }
+    ]);
+   }
+
+   lessonWiseScoreDocument(studentId:any){
+    return this.dbModel.aggregate([
+      { 
+        $match: { student_id: studentId }
+      },
+      {
+        $group: {
+          _id: "$lesson_master_id",
+          totalScore: { $sum: "$score" }
+        }
+      },
+      {
+        $lookup: {
+          from: "emis_lessons_masters",
+          localField: "_id",
+          foreignField: "lesson_master_id",
+          as: "lessonDetails"
+        }
+      },
+      { 
+        $unwind: "$lessonDetails" 
+      },
+      {
+        $project: {
+          lesson_master_id: "$_id",
+          score: "$totalScore",
+          lesson_id: "$lessonDetails.lesson_id"
+        }
+      }
+    ]);
+   }
+
+   lessonScoreDocuments(studentId: any) {
+    return this.dbModel.aggregate([
+      { 
+        $match: { student_id: studentId }
+      },
+      {
+        $group: {
+          _id: "$lesson_master_id",
+          totalScore: { $sum: "$score" }
+        }
+      }
+      ]);
+   }
+
+   async getAlllessonMasterDocuments() {
+    let lessonDocuments = await memoryCache.get('lesson_master_data');
+
+    if (lessonDocuments) {
+      return lessonDocuments;
+    }else { 
+      const lessonMasterData = await this.dbModel.find({}).lean();
+
+      const lessonMasterObj = lessonMasterData.reduce((acc:any, item:any) => {
+        acc[item.lesson_master_id] = item.lesson_id;
+        return acc;
+      }, {});
+
+      await memoryCache.set('lesson_master_data', lessonMasterObj, 60 * 100 * 100 );
+      return lessonMasterObj;
+    }
    }
  
-   getSchema() {
-     return this.dbModel.schema;
-   }
  }
  
  export default CrudOperations;
