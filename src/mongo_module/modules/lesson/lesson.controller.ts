@@ -8,23 +8,23 @@ class lessonController {
 
     static async addLesson(request: Request, response: Response, next: CallableFunction) {
         try {
-            const userID = response.locals.virtual_id.toString();  
+            const userID = response.locals.virtual_id.toString();
             const lesson = request.body;
             lesson.userId = userID;
 
             const { error } = addLessonValidationSchema.validate(request.body);
-            if(error){
-                response.status(400).send(new HttpResponse(null, null,"Required fields are missing", null));
+            if (error) {
+                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null, (request as any).version));
             }
-            else{
+            else {
                 lessonServices.addLesson(lesson, (err: any, result: any) => {
                     if (err) {
                         response.status(400).send(new HttpException(400, "Something went wrong"));
                     } else {
-                        response.status(200).send(new HttpResponse(null, result, "Lesson added", null));
+                        response.status(200).send(new HttpResponse(null, result, "Lesson added", null, (request as any).version));
                     }
                 });
-            }            
+            }
         }
         catch (err) {
             response.status(400).send(new HttpException(400, "Something went wrong"));
@@ -33,19 +33,19 @@ class lessonController {
 
     static async getLessonProgress(request: Request, response: Response, next: NextFunction) {
         try {
-            const userID = response.locals.virtual_id;  
+            const userID = response.locals.virtual_id;
             const language = request.query.language;
 
-            const { error } = getLessonProgressValidationSchema.validate({userId:userID, ...request.query});
+            const { error } = getLessonProgressValidationSchema.validate({ userId: userID, ...request.query });
             if (error) {
-                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
+                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null, (request as any).version));
             }
             else {
-                lessonServices.getLessonProgress(userID,language,(err: any, result: any) => {
+                lessonServices.getLessonProgress(userID, language, (err: any, result: any) => {
                     if (err) {
                         response.status(400).send(new HttpException(400, "Something went wrong"));
                     } else {
-                        response.status(200).send(new HttpResponse("GetLessonProgress", result, "Total Lesson Progress Returned", null));
+                        response.status(200).send(new HttpResponse("GetLessonProgress", result, "Total Lesson Progress Returned", null, (request as any).version));
                     }
                 });
             }

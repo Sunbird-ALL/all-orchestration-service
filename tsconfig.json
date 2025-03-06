@@ -11,6 +11,8 @@
       "./types"
     ],
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    
   }
 }
+

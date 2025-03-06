@@ -13,13 +13,13 @@ class virtualIdController {
         
             const { error } = genarateVirtualIdValidationSchema.validate({...request.query });
             if (error) {
-                response.status(400).send(new HttpResponse(null, null,"Required fields are missing", null));
+                response.status(400).send(new HttpResponse(null, null,"Required fields are missing", null, (request as any).version));
             } else {
                 virtualIdService.generateId(username,version,(err: any, result: any) => {
                 if (err) {
                     response.status(400).send(new HttpException(400, "Something went wrong"));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Token generated", null));
+                    response.status(200).send(new HttpResponse(null, result, "Token generated", null, (request as any).version));
                 }
             });
         }

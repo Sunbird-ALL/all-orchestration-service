@@ -48,7 +48,6 @@ class pointerServices {
                 const totalSessionPoints = sessionData.reduce((total: any, doc: any) => total + (doc.points || 0), 0);
 
                 const response = {
-                    userID,
                     totalUserPoints,
                     totalLanguagePoints,
                     totalSessionPoints,

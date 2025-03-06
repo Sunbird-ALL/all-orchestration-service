@@ -12,10 +12,10 @@ class MozhigalTrackerController {
             const studentId = response.locals.virtual_id.toString();
             const learningLogsData = request.body;
             const lessonId = request.params.lessonId;
-            
+
             const { error } = addLearningLogsValidationSchema.validate({ userId: studentId, ...request.body, lessonId });
             if (error) {
-                response.status(400).send(new HttpResponse(null, null,"Please provide the number in range", "Invalid number"));
+                response.status(400).send(new HttpResponse(null, null, "Please provide the number in range", "Invalid number", (request as any).version));
             }
             else {
 
@@ -29,7 +29,7 @@ class MozhigalTrackerController {
                     if (err) {
                         response.status(400).send(new HttpException(400, "Something went wrong"));
                     } else {
-                        response.status(200).send(new HttpResponse(null, result, "New score entry created successfully", null));
+                        response.status(200).send(new HttpResponse(null, result, "New score entry created successfully", null, (request as any).version));
                     }
                 });
             }
@@ -45,7 +45,7 @@ class MozhigalTrackerController {
 
             const { error } = getCumulativeScoreValidationSchema.validate({ userId: studentId });
             if (error) {
-                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
+                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null, (request as any).version));
             }
             else {
 
@@ -53,7 +53,7 @@ class MozhigalTrackerController {
                     if (err) {
                         response.status(400).send(new HttpException(400, "Something went wrong"));
                     } else {
-                        response.status(200).send(new HttpResponse(null, result, "Students Cumulative Score Returned", null));
+                        response.status(200).send(new HttpResponse(null, result, "Students Cumulative Score Returned", null, (request as any).version));
                     }
                 });
             }
@@ -69,7 +69,7 @@ class MozhigalTrackerController {
 
             const { error } = getLessonWiseScoreValidationSchema.validate({ userId: studentId });
             if (error) {
-                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
+                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null, (request as any).version));
             }
             else {
 
@@ -77,7 +77,7 @@ class MozhigalTrackerController {
                     if (err) {
                         response.status(400).send(new HttpException(400, "Something went wrong"));
                     } else {
-                        response.status(200).send(new HttpResponse(null, result, "Students Cumulative Score Returned", null));
+                        response.status(200).send(new HttpResponse(null, result, "Students Cumulative Score Returned", null, (request as any).version));
                     }
                 });
             }

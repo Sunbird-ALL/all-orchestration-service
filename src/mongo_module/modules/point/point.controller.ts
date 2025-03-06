@@ -15,14 +15,14 @@ class pointerController {
 
             const { error } = addPointValidationSchema.validate({ userId, ...request.body });
             if (error) {
-                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
+                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null, (request as any).version));
             }
             else {
                 pointerServices.addPoint(pointer, (err: any, result: any) => {
                     if (err) {
                         response.status(400).send(new HttpException(400, "Something went wrong"));
                     } else {
-                        response.status(200).send(new HttpResponse(null, result, "Point added", null));
+                        response.status(200).send(new HttpResponse(null, result, "Point added", null, (request as any).version));
                     }
                 });
             }
@@ -41,13 +41,13 @@ class pointerController {
 
             const { error } = getPointsByUserIdValidationSchema.validate({ userId: userId, sessionId, language });
             if (error) {
-                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
+                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null, (request as any).version));
             } else {
                 pointerServices.getPointsByUserID(userId, sessionId, language, (err: any, result: any) => {
                     if (err) {
                         response.status(400).send(new HttpException(400, "Something went wrong"));
                     } else {
-                        response.status(200).send(new HttpResponse("GetPointer", result, "Total pointer Returned", null));
+                        response.status(200).send(new HttpResponse("GetPointer", result, "Total pointer Returned", null, (request as any).version));
                     }
                 });
             }

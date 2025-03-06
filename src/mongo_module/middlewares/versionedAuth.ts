@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import * as jose from "jose";
 import decryptToken from "../../common/token/tokenCommen";
 
 const verify = async (request: Request, response: Response, next: NextFunction) => {
 
   const version = request.originalUrl.split("/")[1];
+  (request as any).version = version;
+
   // Skip token validation for v1
   if (version === "v1") {
     let userId: string | undefined;
