@@ -5,7 +5,7 @@ import decryptToken from '../../common/token/tokenCommen';
 
 const verifyToken = async (request: Request, response: Response, next: NextFunction) => {
     try {
-        return decryptToken(request, response, next);
+        return await decryptToken(request, response, next);
     } catch (error) {
         return response.status(500).json({ status: 500, error: "Somethning wrong" }); 
     }
