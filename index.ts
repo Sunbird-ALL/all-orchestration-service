@@ -25,6 +25,7 @@ if (cluster.isPrimary) {
   });
 } else {
   const app = express();
+  app.disable("x-powered-by");
   const PORT: number = parseInt(process.env.PORT || '3009');
   const HOST: string = '0.0.0.0';
   const dataBaseType: string = process.env.DATABASE_TYPE || '';
