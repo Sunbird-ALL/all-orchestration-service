@@ -17,7 +17,7 @@ class virtualIdService {
                     return next(null, {
                         virtualID: existingUserName.virtualId
                     });
-                    
+
                 } else {
                     const virtualID = generateRandomID();
                     const newUser = new virtualId({ userName: lowercaseUname, virtualId: virtualID });
@@ -35,7 +35,7 @@ class virtualIdService {
             let virtualID: number;
             if (existingUser) {
                 virtualID = existingUser.virtualId;
-               
+
             } else {
                 virtualID = generateRandomID();
                 const newUser = new virtualId({ userName: lowercaseUsername, virtualId: virtualID });
@@ -67,11 +67,5 @@ export default virtualIdService;
 
 // function for generate random_id
 function generateRandomID() {
-    // return Math.floor(1000000000 + Math.random() * 9000000000);
-    const array = new Uint32Array(1);
-    crypto.getRandomValues(array);
-    
-    // Ensure it falls within the 10-digit range
-    return 1000000000 + (array[0] % 9000000000);
+    return Math.floor(1000000000 + Math.random() * 9000000000);
 }
-
