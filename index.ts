@@ -45,6 +45,7 @@ if (cluster.isPrimary) {
   } else {
     mongodbConnection();
     app.use('/v1/api', mongoDbRouter);
+    console.log("Code is running on the port ", process.env.PORT);
     app.use('/v2/api', mongoDbRouter);
   }
 
