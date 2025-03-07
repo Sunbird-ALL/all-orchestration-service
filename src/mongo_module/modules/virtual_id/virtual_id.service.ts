@@ -74,4 +74,3 @@ function generateRandomID() {
     // Ensure it falls within the 10-digit range
     return 1000000000 + (array[0] % 9000000000);
 }
-

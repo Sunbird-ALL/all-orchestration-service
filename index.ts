@@ -38,7 +38,19 @@ if (cluster.isPrimary) {
 
   // compress the responce
   app.use(compression())
+  app.use((req, res, next) => {
+    console.log(`[${req.method}] ${req.originalUrl} - Request Body:`, req.body);
 
+    // Store the original res.send function
+    const originalSend = res.send;
+
+    res.send = function (body) {
+        console.log(`[${req.method}] ${req.originalUrl} - Response Body:`, body);
+        return originalSend.call(this, body); // Call original send function
+    };
+
+    next();
+});
   if (dataBaseType.toLowerCase() === 'mysql') {
     sqlDatabaseConnection();
     app.use('/api', sqlRouter);
