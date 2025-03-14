@@ -1,10 +1,9 @@
 import { Request, Response } from "express";
 import HttpException from "../../../common/http.Exception/http.Exception";
 import HttpResponse from "../../../common/http.Response/http.Response";
-import virtualIdSqlSqlService from "./virtual_id.service";
+import virtualIdService from "./virtual_id.service";
 
-
-class virtualIdSqlController {
+class virtualIdController {
 
     static async genarateVirtualId(request: Request, response: Response, next: CallableFunction) {
         try {
@@ -12,7 +11,7 @@ class virtualIdSqlController {
             if (!username) {
                 next(new HttpException(400, "Username and password are required"));
             }
-            virtualIdSqlSqlService.genarateId(username,(err: any, result: any) => {
+            virtualIdService.generateId(username,(err: any, result: any) => {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
@@ -25,4 +24,4 @@ class virtualIdSqlController {
         }
     }
 }
-export default virtualIdSqlController;
+export default virtualIdController;

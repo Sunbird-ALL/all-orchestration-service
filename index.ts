@@ -1,35 +1,58 @@
-import express from "express";
-import cors from "cors"
+import express from 'express';
+import cors from 'cors';
 import * as dotenv from 'dotenv';
+import cluster from 'cluster';
+import os from 'os';
+import compression from 'compression'
+import sqlRouter, { sqlDatabaseConnection } from './src/sql_module';
+import mongoDbRouter, { mongodbConnection } from './src/mongo_module/modules';
 dotenv.config();
-import sqlRouter, { sqlDatabaseConnection } from "./src/sql_module";
 
-import mongoDbRouter, { mongodbConnection } from "./src/mongo_module/modules";
-export const app = express();
+const numCPUs = os.cpus().length;
 
-const PORT: number = parseInt(process.env.PORT || '3009');
-const dataBaseType: string = process.env.DATABASE_TYPE || ""
+if (cluster.isPrimary) {
+  console.log(`Master ${process.pid} is running`);
 
-// parsing the request data
-app.use(express.json());
-app.use(cors());
+  // Fork workers
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
 
-if (dataBaseType.toLowerCase() === "mysql") {
-  sqlDatabaseConnection()
-  app.use("/api", sqlRouter);
+  cluster.on('exit', (worker) => {
+    console.log(`Worker ${worker.process.pid} died`);
+    console.log('Starting a new worker');
+    cluster.fork();
+  });
 } else {
-  mongodbConnection();
-  app.use("/api", mongoDbRouter);
+  const app = express();
+  const PORT: number = parseInt(process.env.PORT || '3009');
+  const HOST: string = '0.0.0.0';
+  const dataBaseType: string = process.env.DATABASE_TYPE || '';
+
+  // Parsing the request data
+  app.use(express.json());
+  app.use(cors());
+
+  // compress the responce
+  app.use(compression())
+
+  if (dataBaseType.toLowerCase() === 'mysql') {
+    sqlDatabaseConnection();
+    app.use('/api', sqlRouter);
+  } else {
+    mongodbConnection();
+    app.use('/api', mongoDbRouter);
+  }
+
+  // App testing
+  app.get('/ping', (req, res) => {
+    res.status(200).json({
+      status: true,
+      message: 'App is working',
+    });
+  });
+
+  app.listen(PORT,HOST, () => {
+    console.log(`Worker ${process.pid} is running on port ${PORT}`);
+  });
 }
-
-// App testing
-app.get('/ping', (req, res) => {
-  res.status(200).json({
-    status: true,
-    message: "App is working",
-  })
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});

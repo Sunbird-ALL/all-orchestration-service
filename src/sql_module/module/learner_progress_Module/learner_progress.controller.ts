@@ -15,7 +15,7 @@ class learnerProgressSqlController {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Lesson added", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Lesson added", null));
                 }
             });
         }
@@ -32,7 +32,7 @@ class learnerProgressSqlController {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Latest learner progress retrieved", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Latest learner progress retrieved", null));
                 }
             });
         } catch (err) {
@@ -48,7 +48,7 @@ class learnerProgressSqlController {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress retrieved", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress retrieved", null));
                 }
             });
         } catch (err) {
@@ -64,7 +64,7 @@ class learnerProgressSqlController {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress retrieved", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress retrieved", null));
                 }
             });
         } catch (err) {
@@ -80,7 +80,7 @@ class learnerProgressSqlController {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress retrieved", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress retrieved", null));
                 }
             });
         } catch (err) {
@@ -96,7 +96,7 @@ class learnerProgressSqlController {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress retrieved", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress retrieved", null));
                 }
             });
         } catch (err) {
@@ -113,7 +113,7 @@ class learnerProgressSqlController {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress updated successfully", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress updated successfully", null));
                 }
             });
         } catch (err) {
@@ -130,7 +130,7 @@ class learnerProgressSqlController {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress updated successfully", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress updated successfully", null));
                 }
             });
         } catch (err) {
@@ -146,7 +146,7 @@ class learnerProgressSqlController {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress deleted successfully", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress deleted successfully", null));
                 }
             });
         } catch (err) {
@@ -162,7 +162,7 @@ class learnerProgressSqlController {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress deleted successfully", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress deleted successfully", null));
                 }
             });
         } catch (err) {
@@ -178,7 +178,7 @@ class learnerProgressSqlController {
                 if (err) {
                     next(new HttpException(400, err));
                 } else {
-                    response.status(200).send(new HttpResponse(null, result, "Learner progress deleted successfully", null, null, null));
+                    response.status(200).send(new HttpResponse(null, result, "Learner progress deleted successfully", null));
                 }
             });
         } catch (err) {
