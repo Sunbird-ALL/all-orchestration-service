@@ -5,7 +5,6 @@ import LearnerProgress from "../../models/learnerProgress";
 
 class LearnerProgressServices {
     
-    // add pointers
     public static async createLearnerProgress(learnerProgress: any, next: CallableFunction) {
         try {
             const newLearnerProgress = new LearnerProgress(learnerProgress);
@@ -25,10 +24,9 @@ class LearnerProgressServices {
             }else{
                 return next(null, "No data found for this user!");
             }
-            const response = {result}
+            const response = result
             next(null, response);
         } catch (err) {
-            console.log("Error:", err);
             next("Something went wrong");
         }
     }

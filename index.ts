@@ -26,11 +26,14 @@ if (cluster.isPrimary) {
 } else {
   const app = express();
   const PORT: number = parseInt(process.env.PORT || '3009');
+  const HOST: string = '0.0.0.0';
   const dataBaseType: string = process.env.DATABASE_TYPE || '';
 
-  // Parsing the request data
-  app.use(express.json());
+  // Increase request size limit
+  app.use(express.json({ limit: '5mb' }));
+  app.use(express.urlencoded({ limit: '5mb', extended: true }));
   app.use(cors());
+
 
   // compress the responce
   app.use(compression())
@@ -51,7 +54,7 @@ if (cluster.isPrimary) {
     });
   });
 
-  app.listen(PORT, () => {
+  app.listen(PORT,HOST, () => {
     console.log(`Worker ${process.pid} is running on port ${PORT}`);
   });
 }
