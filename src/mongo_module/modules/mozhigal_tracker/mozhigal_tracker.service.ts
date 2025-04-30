@@ -1,12 +1,10 @@
-
 import CrudOperations from "../../../common/crud";
 import learningLogs from "../../models/mozhigalScoreTracker";
 import emisLessonMaster from "../../models/emisLessonMaster";
 
-
 class MozhigalTrackerServices {
 
-    public static async addLearningLogs(learningLogsData: any, lessonId: any,studentId:any, next: CallableFunction) {
+    public static async addLearningLogs(learningLogsData: any, lessonId: any, studentId: any, next: CallableFunction) {
         try {
             const resultData = await new CrudOperations(emisLessonMaster).getDocument({ lesson_id: lessonId }, {});
             if (!resultData) {
@@ -16,6 +14,7 @@ class MozhigalTrackerServices {
             learningLogsData["student_id"] = studentId;
             const newData = new learningLogs(learningLogsData);
             const result = await new CrudOperations(learningLogs).save(newData);
+
             return next(null, result);
         } catch (err: any) {
             return next(err, "Something went wrong!");
@@ -29,7 +28,7 @@ class MozhigalTrackerServices {
                 return next(null, 'Student not found or no scores available');
             }
             const totalScore = result[0].totalScore
-            return next(null, {studentId,totalScore});
+            return next(null, { studentId, totalScore });
         } catch (err: any) {
             return next(err, "Something went wrong!");
         }
@@ -41,13 +40,13 @@ class MozhigalTrackerServices {
             const scoreResult = await new CrudOperations(learningLogs).lessonScoreDocuments(studentId);
             const lessonResult = await new CrudOperations(emisLessonMaster).getAlllessonMasterDocuments();
 
-            let result:any = [];
+            let result: any = [];
 
             scoreResult.forEach((scoreEle: any) => {
-                    result.push({
-                        score: scoreEle.totalScore,
-                        lesson_id : lessonResult[scoreEle._id]
-                    });
+                result.push({
+                    score: scoreEle.totalScore,
+                    lesson_id: lessonResult[scoreEle._id]
+                });
             });
 
             return next(null, result);

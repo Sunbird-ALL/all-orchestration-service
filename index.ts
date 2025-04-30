@@ -29,9 +29,11 @@ if (cluster.isPrimary) {
   const HOST: string = '0.0.0.0';
   const dataBaseType: string = process.env.DATABASE_TYPE || '';
 
-  // Parsing the request data
-  app.use(express.json());
+  // Increase request size limit
+  app.use(express.json({ limit: '5mb' }));
+  app.use(express.urlencoded({ limit: '5mb', extended: true }));
   app.use(cors());
+
 
   // compress the responce
   app.use(compression())

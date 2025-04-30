@@ -1,13 +1,14 @@
 import { Router } from "express";
+import verifyToken from '../../middlewares/verify.token';
 import MozhigalTrackerController from "./mozhigal_tracker.controller";
 
 const mozhigalTrackerRouter = Router();
 
-mozhigalTrackerRouter.post("/:studentId/:lessonId", MozhigalTrackerController.addLearningLogs);
+mozhigalTrackerRouter.post("/:lessonId", verifyToken, MozhigalTrackerController.addLearningLogs);
 
-mozhigalTrackerRouter.get("/student/:studentId", MozhigalTrackerController.getCumulativeScore);
+mozhigalTrackerRouter.get("/student", verifyToken, MozhigalTrackerController.getCumulativeScore);
 
-mozhigalTrackerRouter.get("/lessons/:studentId", MozhigalTrackerController.getLessonWiseScore);
+mozhigalTrackerRouter.get("/lessons", verifyToken, MozhigalTrackerController.getLessonWiseScore);
 
 
 export default mozhigalTrackerRouter;
