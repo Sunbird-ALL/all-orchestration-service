@@ -6,6 +6,8 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
     try {
         //Step 1: Load & Validate Secret Key
         const secret_key = process.env.JOSE_SECRET || '';
+        console.log("secret_key-------", secret_key);
+        console.log("JWT_SIGNIN_PRIVATE_KEY--------", process.env.JWT_SIGNIN_PRIVATE_KEY)
         if (!secret_key) {
             return response.status(500).json({ status: 500, error: "Secret key is missing" });
         }
