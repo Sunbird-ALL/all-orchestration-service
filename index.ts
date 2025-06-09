@@ -6,6 +6,7 @@ import os from 'os';
 import compression from 'compression'
 import sqlRouter, { sqlDatabaseConnection } from './src/sql_module';
 import mongoDbRouter, { mongodbConnection } from './src/mongo_module/modules';
+import { connectRedis } from './src/mongo_module/modules/redisClient';
 dotenv.config();
 
 const numCPUs = os.cpus().length;
@@ -23,38 +24,54 @@ if (cluster.isPrimary) {
     console.log('Starting a new worker');
     cluster.fork();
   });
-} else {
-  const app = express();
-  const PORT: number = parseInt(process.env.PORT || '3009');
-  const HOST: string = '0.0.0.0';
-  const dataBaseType: string = process.env.DATABASE_TYPE || '';
+}else {
+  (async () => {
+    await connectRedis();
 
-  // Increase request size limit
-  app.use(express.json({ limit: '5mb' }));
-  app.use(express.urlencoded({ limit: '5mb', extended: true }));
-  app.use(cors());
+    const app = express();
+    const PORT: number = parseInt(process.env.PORT || '3009');
+    const HOST: string = '0.0.0.0';
+    const dataBaseType: string = process.env.DATABASE_TYPE || '';
 
+    // Increase request size limit
+    app.use(express.json({ limit: '5mb' }));
+    app.use(express.urlencoded({ limit: '5mb', extended: true }));
 
-  // compress the responce
-  app.use(compression())
+    const allowedOrigins = process.env.ALLOWED_ORIGINS || '';
 
-  if (dataBaseType.toLowerCase() === 'mysql') {
-    sqlDatabaseConnection();
-    app.use('/api', sqlRouter);
-  } else {
-    mongodbConnection();
-    app.use('/api', mongoDbRouter);
-  }
+    app.use(cors({
+      origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+      credentials: true
+    }));
 
-  // App testing
-  app.get('/ping', (req, res) => {
-    res.status(200).json({
-      status: true,
-      message: 'App is working',
+    // compress the response
+    app.use(compression());
+
+    if (dataBaseType.toLowerCase() === 'mysql') {
+      sqlDatabaseConnection();
+      app.use('/api', sqlRouter);
+    } else {
+      mongodbConnection();
+      app.use('/api', mongoDbRouter);
+    }
+
+    // App testing
+    app.get('/ping', (req, res) => {
+      res.status(200).json({
+        status: true,
+        message: 'App is working',
+      });
     });
-  });
 
-  app.listen(PORT,HOST, () => {
-    console.log(`Worker ${process.pid} is running on port ${PORT}`);
-  });
+    app.listen(PORT, HOST, () => {
+      console.log(`Worker ${process.pid} is running on port ${PORT}`);
+    });
+  })(); 
+
 }
