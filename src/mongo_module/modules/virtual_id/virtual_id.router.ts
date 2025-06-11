@@ -4,4 +4,6 @@ const virtualIRouter = Router();
 
 virtualIRouter.post("/generateVirtualID", virtualIdController.genarateVirtualId);
 
+virtualIRouter.post("/logout", virtualIdController.logout);
+
 export default virtualIRouter;

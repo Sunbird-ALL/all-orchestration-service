@@ -1,13 +1,13 @@
 import * as jose from 'jose';
 import { Request, Response, NextFunction } from 'express';
 import { createHash } from 'crypto';
+import redisClient from '../modules/redisClient';
 
 const verifyToken = async (request: Request, response: Response, next: NextFunction) => {
     try {
         //Step 1: Load & Validate Secret Key
         const secret_key = process.env.JOSE_SECRET || '';
-        console.log("secret_key-------", secret_key);
-        console.log("JWT_SIGNIN_PRIVATE_KEY--------", process.env.JWT_SIGNIN_PRIVATE_KEY)
+       
         if (!secret_key) {
             return response.status(500).json({ status: 500, error: "Secret key is missing" });
         }
@@ -20,6 +20,12 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
         }
         const token = authHeader.split(' ')[1];
 
+        // Step 3: Check Token Blacklist in Redis
+        const isBlacklisted = await redisClient.get(`blacklist:${token}`);
+        if (isBlacklisted) {
+            return response.status(401).json({ status: 401, error: "Token has been logged out" });
+        }
+        
         //Step 3: Decrypt the Encrypted Token
         const jwtDecryptedToken = await jose.jwtDecrypt(token, hash);
         if (!jwtDecryptedToken.payload.jwtSignedToken) {
