@@ -24,7 +24,7 @@ if (cluster.isPrimary) {
     console.log('Starting a new worker');
     cluster.fork();
   });
-}else {
+} else {
   (async () => {
     await connectRedis();
 
@@ -32,13 +32,24 @@ if (cluster.isPrimary) {
     const PORT: number = parseInt(process.env.PORT || '3009');
     const HOST: string = '0.0.0.0';
     const dataBaseType: string = process.env.DATABASE_TYPE || '';
+    const allowedOrigins = process.env.ALLOWED_ORIGINS || '';
 
     // Increase request size limit
     app.use(express.json({ limit: '5mb' }));
     app.use(express.urlencoded({ limit: '5mb', extended: true }));
 
-    const allowedOrigins = process.env.ALLOWED_ORIGINS || '';
+    // Restrcit the improper json format
+    app.use((err: any, req: any, res: any, next: () => void) => {
+      if (err instanceof SyntaxError && 'body' in err) {
+        return res.status(400).json(
+          {
+            message: 'Invalid JSON format in request body'
+          });
+      }
+      next();
+    });
 
+    // Cors aalowd for the specific url
     app.use(cors({
       origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
@@ -72,6 +83,6 @@ if (cluster.isPrimary) {
     app.listen(PORT, HOST, () => {
       console.log(`Worker ${process.pid} is running on port ${PORT}`);
     });
-  })(); 
+  })();
 
 }
