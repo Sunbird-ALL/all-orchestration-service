@@ -38,17 +38,6 @@ if (cluster.isPrimary) {
     app.use(express.json({ limit: '5mb' }));
     app.use(express.urlencoded({ limit: '5mb', extended: true }));
 
-    // Restrcit the improper json format
-    app.use((err: any, req: any, res: any, next: () => void) => {
-      if (err instanceof SyntaxError && 'body' in err) {
-        return res.status(400).json(
-          {
-            message: 'Invalid JSON format in request body'
-          });
-      }
-      next();
-    });
-
     // Cors aalowd for the specific url
     app.use(cors({
       origin: function (origin, callback) {
