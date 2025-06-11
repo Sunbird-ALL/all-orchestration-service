@@ -32,7 +32,7 @@ if (cluster.isPrimary) {
     const PORT: number = parseInt(process.env.PORT || '3009');
     const HOST: string = '0.0.0.0';
     const dataBaseType: string = process.env.DATABASE_TYPE || '';
-    const allowedOrigins = process.env.ALLOWED_ORIGINS || '';
+    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
 
     // Increase request size limit
     app.use(express.json({ limit: '5mb' }));
@@ -50,16 +50,18 @@ if (cluster.isPrimary) {
     });
 
     // Cors aalowd for the specific url
-    app.use(cors({
-      origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          callback(new Error('Not allowed by CORS'));
-        }
-      },
-      credentials: true
-    }));
+    app.use(
+      cors({
+        origin: (origin, callback) => {
+          if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+          } else {
+            callback(new Error('Not allowed by CORS'));
+          }
+        },
+        credentials: true,
+      }),
+    );
 
     // compress the response
     app.use(compression());
