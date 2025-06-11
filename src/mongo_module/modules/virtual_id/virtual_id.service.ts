@@ -60,7 +60,6 @@ class virtualIdService {
             if (!secret_key) {
                 throw new HttpException(500, 'Server configuration error');
             }
-
             const hash = createHash('sha256').update(secret_key).digest();
 
             // Step 2: Check if token is already blacklisted
@@ -79,12 +78,12 @@ class virtualIdService {
                     clockTolerance: 300 // 5 minutes tolerance for clock skew
                 });
 
-                // Step 4: Calculate remaining TTL (30 minutes max from issuance)
+            // Step 4: Calculate remaining TTL (30 minutes max from issuance)
                 const currentTime = Math.floor(Date.now() / 1000);
                 const tokenExp = verifiedToken.payload.exp || currentTime + 1800; // Default 30min if missing
                 const ttl = tokenExp - currentTime;
 
-                // Step 5: Blacklist token with remaining TTL
+            // Step 5: Blacklist token with remaining TTL
                 await redisClient.set(`blacklist:${token}`, 'logged-out', {
                     EX: ttl > 0 ? ttl : 1800 // Minimum 30min if already expired
                 });
@@ -104,10 +103,8 @@ class virtualIdService {
                 if (error instanceof jose.errors.JOSEError) {
                     throw new HttpException(401, 'Invalid token');
                 }
-
                 throw error;
             }
-
         } catch (error) {
             console.error('LogoutService error:', error);
             if (error instanceof HttpException) {
