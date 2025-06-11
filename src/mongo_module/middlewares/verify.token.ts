@@ -20,7 +20,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
         }
         const token = authHeader.split(' ')[1];
 
-        // 🔒 Step 3: Check Token Blacklist in Redis
+        // Step 3: Check Token Blacklist in Redis
         const isBlacklisted = await redisClient.get(`blacklist:${token}`);
         if (isBlacklisted) {
             return response.status(401).json({ status: 401, error: "Token has been logged out" });
