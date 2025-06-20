@@ -5,12 +5,10 @@ const learnerai_lesson_tracking = new mongoose.Schema({
     userId : {
         type: String,
         required: true,
-        index: true
     },
     sessionId: {
         type: String,
         required: true,
-        index: true
     },
     milestone: {
         type: String,
@@ -23,7 +21,6 @@ const learnerai_lesson_tracking = new mongoose.Schema({
     language: {
         type: String,
         required: true,
-        index: true
     },
     lesson: {
         type: String,
@@ -39,6 +36,7 @@ const learnerai_lesson_tracking = new mongoose.Schema({
     }
 });
 
+learnerai_lesson_tracking.index({ userId: 1, language: 1, createdAt: -1 });
 
 // Create the Lesson model
 const Lesson = mongoose.model("learnerai_lesson_tracking", learnerai_lesson_tracking);
