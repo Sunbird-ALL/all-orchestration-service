@@ -2,7 +2,7 @@ name: DEV DEPLOYMENT
 
 on:
   push:
-    branches: [ test ]
+    branches: [ lais-v2.1 ]
 
 jobs:
   build:
