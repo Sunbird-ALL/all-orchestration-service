@@ -57,7 +57,7 @@ if (cluster.isPrimary) {
             callback(null, true);
           } else {
             console.log("allowed origins", allowedOrigins)
-            callback(new Error('Not allowed by CORS', origin));
+            callback(new Error('Not allowed by CORS' + origin));
           }
         },
         credentials: true,
