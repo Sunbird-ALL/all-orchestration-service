@@ -46,7 +46,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
             virtualId: virtual_id,
         });
       
-        if (!token_status || token_status.isloggedIn === false) {
+        if (!token_status || token_status.token == null||token_status.token !== token) {
             return response.status(401).json({ status: 401, error: "User logged out!" });
         }
         response.locals.virtual_id = virtual_id;
