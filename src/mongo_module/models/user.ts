@@ -12,8 +12,8 @@ const learnerai_virtual_id = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    isloggedIn:{
-        type: Boolean,
+    token:{
+        type: String,
         required: false,
     },
     createdAt: {

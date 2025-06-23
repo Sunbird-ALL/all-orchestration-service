@@ -14,22 +14,7 @@ class virtualIdService {
             const lowercaseUsername = username.trim().toLowerCase();
             const existingUser = await virtualId.findOne({ userName: lowercaseUsername });
 
-            let virtualID: number;
-            if (existingUser) {
-                virtualID = existingUser.virtualId;
-                await virtualId.updateOne(
-                    { virtualId: virtualID },
-                    {
-                        $set: {
-                            isloggedIn: true,
-                        }
-                    }
-                );
-            } else {
-                virtualID = generateRandomID();
-                const newUser = new virtualId({ userName: lowercaseUsername, virtualId: virtualID, isloggedIn: true, });
-                await newUser.save();
-            }
+            let virtualID = existingUser ? existingUser.virtualId : generateRandomID();
 
             // **Step 1: Sign the JWT Token**
             const jwtSigninKey = new TextEncoder().encode(process.env.JWT_SIGNIN_PRIVATE_KEY);
@@ -45,6 +30,23 @@ class virtualIdService {
                 .setExpirationTime('30m')
                 .encrypt(hash);
 
+            if (existingUser) {
+              await virtualId.updateOne(
+                { virtualId: virtualID },
+                {
+                  $set: {
+                    token: jwtEncryptedToken,
+                  },
+                }
+              );
+            } else {
+              const newUser = new virtualId({
+                userName: lowercaseUsername,
+                virtualId: virtualID,
+                token: jwtEncryptedToken,
+              });
+              await newUser.save();
+            }
             return next(null, {
                 token: jwtEncryptedToken
             });
@@ -78,13 +80,20 @@ class virtualIdService {
                 });
 
                 const virtualID = verifiedToken.payload.virtual_id;
+                const user = await virtualId.findOne({
+                  virtualId: virtualID,
+                });
+
+                if (!user || user.token !== token) {
+                    throw new HttpException(404, 'User not found');
+                }
 
                 // Step 3: Update DB: set isLoggedIn = false,
                 await virtualId.updateOne(
                     { virtualId: virtualID },
                     {
                         $set: {
-                            isloggedIn: false,
+                            token: null,
                         }
                     }
                 );
@@ -114,7 +123,7 @@ class virtualIdService {
         });
 
         return {
-            isLoggedIn: user?.isloggedIn
+            token: user?.token
         };
     }
 }
