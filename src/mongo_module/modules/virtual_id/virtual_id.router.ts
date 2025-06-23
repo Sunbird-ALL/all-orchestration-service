@@ -6,4 +6,6 @@ virtualIRouter.post("/generateVirtualID", virtualIdController.genarateVirtualId)
 
 virtualIRouter.post("/logout", virtualIdController.logout);
 
+virtualIRouter.post("/tokenStatus", virtualIdController.tokenStatus);
+
 export default virtualIRouter;

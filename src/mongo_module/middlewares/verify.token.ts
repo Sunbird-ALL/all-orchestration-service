@@ -1,7 +1,7 @@
 import * as jose from 'jose';
 import { Request, Response, NextFunction } from 'express';
 import { createHash } from 'crypto';
-import redisClient from '../modules/redisClient';
+import virtualId from '../models/user';
 
 const verifyToken = async (request: Request, response: Response, next: NextFunction) => {
     try {
@@ -19,12 +19,6 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
             return response.status(401).json({ status: 401, error: "Invalid or missing token" });
         }
         const token = authHeader.split(' ')[1];
-
-        // Step 3: Check Token Blacklist in Redis
-        const isBlacklisted = await redisClient.get(`blacklist:${token}`);
-        if (isBlacklisted) {
-            return response.status(401).json({ status: 401, error: "Token has been logged out" });
-        }
         
         //Step 3: Decrypt the Encrypted Token
         const jwtDecryptedToken = await jose.jwtDecrypt(token, hash);
@@ -45,6 +39,15 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
 
         if (!virtual_id) {
             return response.status(400).json({ status: 400, error: "Invalid token payload: Missing virtual_id" });
+        }
+
+        //Step:6  get the data from the virtual_id
+        const token_status = await virtualId.findOne({
+            virtualId: virtual_id,
+        });
+      
+        if (!token_status || token_status.isloggedIn === false) {
+            return response.status(401).json({ status: 401, error: "User logged out!" });
         }
         response.locals.virtual_id = virtual_id;
         next();

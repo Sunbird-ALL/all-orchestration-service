@@ -50,5 +50,20 @@ class virtualIdController {
             return response.status(400).send(new HttpException(400, 'Something went wrong'));
         }
     }
+
+    // Internally calling
+    static async tokenStatus(request: Request, response: Response, next: CallableFunction) {
+        try { 
+            const user_id = request.body.user_id;
+            const result = await virtualIdService.tokenStatus(user_id);
+            if (result) {
+                return response.status(200).send(new HttpResponse(null, result, "user status return", null));
+            } else {
+                return response.status(400).send(new HttpException(400, ""));
+            }
+        } catch (err) {
+            return response.status(400).send(new HttpException(400, 'Something went wrong'));
+        }
+    }
 }
 export default virtualIdController;
