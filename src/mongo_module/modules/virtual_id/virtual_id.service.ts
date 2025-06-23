@@ -2,10 +2,7 @@ import { SignJWT } from "jose";
 import virtualId from "../../models/user";
 import * as jose from 'jose';
 import { createHash } from "crypto";
-import redisClient from "../redisClient";
 import HttpException from "../../../common/http.Exception/http.Exception";
-
-
 
 class virtualIdService {
 
@@ -20,9 +17,17 @@ class virtualIdService {
             let virtualID: number;
             if (existingUser) {
                 virtualID = existingUser.virtualId;
+                await virtualId.updateOne(
+                    { virtualId: virtualID },
+                    {
+                        $set: {
+                            isloggedIn: true,
+                        }
+                    }
+                );
             } else {
                 virtualID = generateRandomID();
-                const newUser = new virtualId({ userName: lowercaseUsername, virtualId: virtualID });
+                const newUser = new virtualId({ userName: lowercaseUsername, virtualId: virtualID, isloggedIn: true, });
                 await newUser.save();
             }
 
@@ -62,13 +67,7 @@ class virtualIdService {
             }
             const hash = createHash('sha256').update(secret_key).digest();
 
-            // Step 2: Check if token is already blacklisted
-            const isBlacklisted = await redisClient.get(`blacklist:${token}`);
-            if (isBlacklisted) {
-                return { success: true, message: 'Token was already logged out' };
-            }
-
-            // Step 3: Decrypt and verify token (with expiration tolerance)
+            // Step 2: Decrypt and verify token (with expiration tolerance)
             try {
                 const jwtDecryptedToken = await jose.jwtDecrypt(token, hash);
                 const jwtSignedToken = String(jwtDecryptedToken.payload.jwtSignedToken);
@@ -78,28 +77,23 @@ class virtualIdService {
                     clockTolerance: 300 // 5 minutes tolerance for clock skew
                 });
 
-            // Step 4: Calculate remaining TTL (30 minutes max from issuance)
-                const currentTime = Math.floor(Date.now() / 1000);
-                const tokenExp = verifiedToken.payload.exp || currentTime + 1800; // Default 30min if missing
-                const ttl = tokenExp - currentTime;
+                const virtualID = verifiedToken.payload.virtual_id;
 
-            // Step 5: Blacklist token with remaining TTL
-                await redisClient.set(`blacklist:${token}`, 'logged-out', {
-                    EX: ttl > 0 ? ttl : 1800 // Minimum 30min if already expired
-                });
-
-                return { success: true };
-
+                // Step 3: Update DB: set isLoggedIn = false,
+                await virtualId.updateOne(
+                    { virtualId: virtualID },
+                    {
+                        $set: {
+                            isloggedIn: false,
+                        }
+                    }
+                );
+                return { success: true, message: 'Logout successful' };
             } catch (error) {
-                // Handle expired tokens - still blacklist them for remaining buffer period
                 if (error instanceof jose.errors.JWTExpired) {
-                    await redisClient.set(`blacklist:${token}`, 'logged-out', {
-                        EX: 300 // 5 minutes for expired tokens
-                    });
-                    return { success: true, message: 'Expired token was logged out' };
+                    return { success: true, message: 'Token was already expired' };
                 }
 
-                // For other JWT errors
                 if (error instanceof jose.errors.JOSEError) {
                     throw new HttpException(401, 'Invalid token');
                 }
@@ -114,7 +108,15 @@ class virtualIdService {
         }
     }
 
+    static async tokenStatus(user_id: string) {
+        const user = await virtualId.findOne({
+            virtualId: user_id,
+        });
 
+        return {
+            isLoggedIn: user?.isloggedIn
+        };
+    }
 }
 export default virtualIdService;
 
