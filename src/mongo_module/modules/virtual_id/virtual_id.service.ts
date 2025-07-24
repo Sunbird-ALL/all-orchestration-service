@@ -1,4 +1,5 @@
 import { SignJWT } from "jose";
+import { jwtDecode } from "jwt-decode";
 import virtualId from "../../models/user";
 import * as jose from 'jose';
 import { createHash } from "crypto";
@@ -55,6 +56,41 @@ class virtualIdService {
         }
     }
 
+    // Decode JOSE token and extract virtual ID
+    static async decodeToken(encryptedToken: string): Promise<{ virtual_id: string; success: boolean; error?: string }> {
+        try {
+            const secret = process.env.JOSE_SECRET;
+            if (!secret) {
+                throw new Error('JOSE_SECRET environment variable is not set');
+            }
+
+            // Generate a 32-byte key from your secret (SHA-256)
+            const key = createHash('sha256').update(secret).digest();
+
+            // Decrypt the token and extract the payload
+            const { payload, protectedHeader } = await jose.jwtDecrypt(encryptedToken, key, {
+                clockTolerance: 60 * 60 * 24 * 365,  // 1 year tolerance
+                maxTokenAge: undefined              // disable age-based rejection
+            });
+
+            // Extract the JWT signed token from the payload
+            const jwtSignedToken = String(payload.jwtSignedToken);
+
+            const decoded: any = jwtDecode(jwtSignedToken);
+
+            return {
+                'virtual_id': decoded.virtual_id,
+                success: true
+            };
+        } catch (err: any) {
+            console.error('Token decoding error:', err.message);
+            return {
+                virtual_id: '',
+                success: false,
+                error: err.message
+            };
+        }
+    }
 
     static async logout(token: string): Promise<{ success: boolean; message?: string }> {
         try {
