@@ -14,6 +14,7 @@ class virtualIdService {
             const hash = createHash('sha256').update(secret_key).digest();
             const lowercaseUsername = username.trim().toLowerCase();
             const existingUser = await virtualId.findOne({ userName: lowercaseUsername });
+            const token_exp_time = process.env.JWT_EXPIRATION || '1h'
 
             let virtualID = existingUser ? existingUser.virtualId : generateRandomID();
 
@@ -21,14 +22,14 @@ class virtualIdService {
             const jwtSigninKey = new TextEncoder().encode(process.env.JWT_SIGNIN_PRIVATE_KEY);
             const jwtSignedToken = await new jose.SignJWT({ virtual_id: virtualID })
                 .setProtectedHeader({ alg: 'HS256' })
-                .setExpirationTime('30m')
+                .setExpirationTime(token_exp_time)
                 .sign(jwtSigninKey);
 
 
             // **Step 2: Encrypt the Signed JWT Token**
             const jwtEncryptedToken = await new jose.EncryptJWT({ jwtSignedToken })
                 .setProtectedHeader({ alg: 'dir', enc: 'A128CBC-HS256' })
-                .setExpirationTime('30m')
+                .setExpirationTime(token_exp_time)
                 .encrypt(hash);
 
             if (existingUser) {
