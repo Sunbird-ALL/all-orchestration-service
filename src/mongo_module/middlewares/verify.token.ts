@@ -34,7 +34,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
         //Step 5: Check Expiration
         const { exp, virtual_id } = verifiedToken.payload;
         if (!exp || exp <= Math.floor(Date.now() / 1000)) {
-            return response.status(401).json({ status: 401, error: "Token expired" });
+            return response.status(401).json({ status: 401, error: "Token expired" , message: "Token expired"});
         }
 
         if (!virtual_id) {
@@ -54,12 +54,12 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
     } catch (error) {
 
         if (error instanceof jose.errors.JWTExpired) {
-            return response.status(401).json({ status: 401, error: "Token expired" });
+            return response.status(401).json({ status: 401, error: "Token expired", message: "Token expired"});
         } else if (error instanceof jose.errors.JWSSignatureVerificationFailed) {
-            return response.status(401).json({ status: 401, error: "Invalid token signature" });
+            return response.status(401).json({ status: 401, error: "Invalid token signature", message: "Invalid token signature" });
         }
 
-        return response.status(400).json({ status: 400, error: "Invalid token" });
+        return response.status(400).json({ status: 400, error: "Invalid token" ,message: "Invalid token"});
     }
 };
 export default verifyToken;
