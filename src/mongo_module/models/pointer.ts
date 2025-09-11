@@ -15,7 +15,6 @@ const learnerai_points_tracking = new mongoose.Schema({
     language: {
         type: String,
         required: true,
-        index: true
     },
     points: {
         type: Number,
@@ -30,6 +29,9 @@ const learnerai_points_tracking = new mongoose.Schema({
         default: Date.now
     }
 });
+
+learnerai_points_tracking.index({ userId: 1, language: 1, createdAt: -1 });
+
 // Create pointer model
 const pointer = mongoose.model("learnerai_points_tracking", learnerai_points_tracking);
 export default pointer;

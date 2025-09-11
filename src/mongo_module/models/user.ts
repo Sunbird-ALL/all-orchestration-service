@@ -1,3 +1,4 @@
+import { boolean } from "joi";
 import mongoose from "mongoose";
 
 // Define the User schema
@@ -10,7 +11,10 @@ const learnerai_virtual_id = new mongoose.Schema({
     virtualId: {
         type: Number,
         required: true,
-        index: true
+    },
+    token:{
+        type: String,
+        required: false,
     },
     createdAt: {
         type: Date,
