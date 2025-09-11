@@ -7,7 +7,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
     try {
         //Step 1: Load & Validate Secret Key
         const secret_key = process.env.JOSE_SECRET || '';
-       
+
         if (!secret_key) {
             return response.status(500).json({ status: 500, error: "Secret key is missing" });
         }
@@ -16,14 +16,14 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
         //Step 2: Extract Token from Header
         const authHeader = request.header('authorization');
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return response.status(401).json({ status: 401, error: "Invalid or missing token" });
+            return response.status(401).json({ status: 401, error: "Invalid or missing token", message: "Invalid or missing token" });
         }
         const token = authHeader.split(' ')[1];
-        
+
         //Step 3: Decrypt the Encrypted Token
         const jwtDecryptedToken = await jose.jwtDecrypt(token, hash);
         if (!jwtDecryptedToken.payload.jwtSignedToken) {
-            return response.status(400).json({ status: 400, error: "Invalid token payload: Missing jwtSignedToken" });
+            return response.status(400).json({ status: 400, error: "Invalid token payload: Missing jwtSignedToken", message: "Invalid token payload" });
         }
 
         //Step 4: Verify the Signed JWT
@@ -34,32 +34,32 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
         //Step 5: Check Expiration
         const { exp, virtual_id } = verifiedToken.payload;
         if (!exp || exp <= Math.floor(Date.now() / 1000)) {
-            return response.status(401).json({ status: 401, error: "Token expired" });
+            return response.status(401).json({ status: 401, error: "Token expired", message: "Token expired" });
         }
 
         if (!virtual_id) {
-            return response.status(400).json({ status: 400, error: "Invalid token payload: Missing virtual_id" });
+            return response.status(400).json({ status: 400, error: "Invalid token payload: Missing virtual_id", message: "Invalid token payload" });
         }
 
         //Step:6  get the data from the virtual_id
         const token_status = await virtualId.findOne({
             virtualId: virtual_id,
         });
-      
-        if (!token_status || token_status.token == null||token_status.token !== token) {
-            return response.status(401).json({ status: 401, error: "User logged out!" });
+
+        if (!token_status || token_status.token == null || token_status.token !== token) {
+            return response.status(401).json({ status: 401, error: "User logged out!", message: "User logged out!" });
         }
         response.locals.virtual_id = virtual_id;
         next();
     } catch (error) {
 
         if (error instanceof jose.errors.JWTExpired) {
-            return response.status(401).json({ status: 401, error: "Token expired" });
+            return response.status(401).json({ status: 401, error: "Token expired", message: "Token expired" });
         } else if (error instanceof jose.errors.JWSSignatureVerificationFailed) {
-            return response.status(401).json({ status: 401, error: "Invalid token signature" });
+            return response.status(401).json({ status: 401, error: "Invalid token signature", message: "Invalid token signature" });
         }
 
-        return response.status(400).json({ status: 400, error: "Invalid token" });
+        return response.status(400).json({ status: 400, error: "Invalid token", message: "Invalid token" });
     }
 };
 export default verifyToken;
