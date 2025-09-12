@@ -7,7 +7,8 @@ class studentService {
             const existingUser = await student.findOne({ userName: userName });
             if (existingUser) { return existingUser };
 
-            return await student.create({ userName: userName });
+            const result = await student.create({ userName: userName });
+            return next(null, result);
         } catch (err) {
             return next(err, "Something went wrong!");
         }
