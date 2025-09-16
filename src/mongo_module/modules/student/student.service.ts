@@ -10,6 +10,8 @@ class studentService {
             const result = await student.create({ userName: userName });
             return next(null, result);
         } catch (err) {
+            console.log(err);
+            
             return next(err, "Something went wrong!");
         }
     }

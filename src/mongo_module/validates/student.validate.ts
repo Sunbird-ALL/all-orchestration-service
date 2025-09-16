@@ -12,12 +12,12 @@ const type = Joi.string()
 
 const username = Joi.string()
     .trim()
-    .pattern(/^\d{11}$/)
+    .pattern(/^(?:\d{11}|GT.*)$/)
     .required()
     .messages({
         "string.base": "Username must be a string",
         "string.empty": "Username cannot be empty",
-        "string.pattern.base": "Username must be exactly 11 digits",
+        "string.pattern.base": "Invalid username",
         "any.required": "Username is required",
     });
 
