@@ -5,13 +5,11 @@ class studentService {
     static async create(userName: any, next: CallableFunction) {
         try {
             const existingUser = await student.findOne({ userName: userName });
-            if (existingUser) { return existingUser };
+            if (existingUser) { return next(null, existingUser); };
 
             const result = await student.create({ userName: userName });
             return next(null, result);
         } catch (err) {
-            console.log(err);
-            
             return next(err, "Something went wrong!");
         }
     }
