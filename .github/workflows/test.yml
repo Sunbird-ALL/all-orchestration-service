@@ -1,0 +1,19 @@
+name: Test SSH Connection - Dev
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ssh-test:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Test SSH connectivity
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY_FILE }}
+          port: ${{ secrets.PORT }}
+          script: |
+            ssh -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} "echo Connected"
