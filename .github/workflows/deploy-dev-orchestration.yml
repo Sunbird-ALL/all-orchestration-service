@@ -18,4 +18,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            /bin/bash -c "export BRANCH=lais-v2.2 && cd /home/sudeepr/git/all-orchestration-service && ./deploy.sh"
+            cd /home/sudeepr/git/all-orchestration-service
+            ./deploy.sh
