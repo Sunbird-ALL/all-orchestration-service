@@ -20,3 +20,4 @@ jobs:
           script: |
             cd /home/sudeepr/git/all-orchestration-service
             ./deploy.sh
+            
