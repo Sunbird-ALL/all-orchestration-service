@@ -1,0 +1,23 @@
+name: Deploy Dev - All Orchestration Service
+
+on:
+  push:
+    branches:
+      - lais-v2.2
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Deploy to Dev Server
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            export BRANCH=lais-v2.2
+            cd /home/sudeepr/git/all-orchestration-service
+            ./deploy.sh
