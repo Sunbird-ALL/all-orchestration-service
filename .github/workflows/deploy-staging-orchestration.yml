@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: orchestration-staging
+    environment: staging
     steps:
       - name: Deploy to Staging Server
         uses: appleboy/ssh-action@v0.1.10
