@@ -18,6 +18,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            export BRANCH=lais-v2.2
-            cd /home/all-staging-user/all-services/all-orchestration-deploy
+            cd /home/${{ secrets.USERNAME }}/git/all-orchestration-service
             ./deploy.sh
