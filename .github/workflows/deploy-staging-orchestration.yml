@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: staging
+    environment: orchestration-staging
     steps:
       - name: Deploy to Staging Server
         uses: appleboy/ssh-action@v0.1.10
@@ -18,5 +18,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            cd /home/${{ secrets.USERNAME }}/git/all-orchestration-service
+            cd /home/all-staging-user/all-services/all-orchestration-deploy
             ./deploy.sh
