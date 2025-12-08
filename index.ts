@@ -3,7 +3,9 @@ import cors from 'cors';
 import * as dotenv from 'dotenv';
 import cluster from 'cluster';
 import os from 'os';
-import compression from 'compression'
+import compression from 'compression';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './src/swagger/swagger.config';
 import sqlRouter, { sqlDatabaseConnection } from './src/sql_module';
 import mongoDbRouter, { mongodbConnection } from './src/mongo_module/modules';
 dotenv.config();
@@ -64,6 +66,19 @@ if (cluster.isPrimary) {
 
     // compress the response
     app.use(compression());
+
+    // Swagger API Documentation
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+      explorer: true,
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: 'All Orchestration Service API Docs'
+    }));
+
+    // Swagger JSON endpoint
+    app.get('/api-docs.json', (req, res) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.send(swaggerSpec);
+    });
 
     if (dataBaseType.toLowerCase() === 'mysql') {
       sqlDatabaseConnection();
