@@ -35,6 +35,22 @@ const config: Config = {
   clearMocks: true,
   resetMocks: true,
   restoreMocks: true,
+  reporters: [
+    "default",
+    [
+      "jest-html-reporters",
+      {
+        publicPath: "./test-report",
+        filename: "test-report.html",
+        openReport: false,
+        expand: true,
+        hideIcon: false,
+        pageTitle: "Test Report",
+        logoImgPath: undefined,
+        inlineSource: false,
+      },
+    ],
+  ],
 };
 
 export default config;

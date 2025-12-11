@@ -62,9 +62,19 @@ export function createTestApp(databaseType: 'mysql' | 'mongodb' = 'mysql') {
     next();
   });
 
-  // CORS - Allow all origins for testing
+  // CORS - Configure for testing environment
+  // Note: Using specific test origins instead of '*' for security
+  // In production, this should be configured via environment variables
+  const testOrigins = process.env.TEST_CORS_ORIGINS?.split(',') || ['http://localhost:3000', 'http://localhost:3009'];
   app.use(cors({
-    origin: '*',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests) in test environment
+      if (!origin || testOrigins.includes(origin) || process.env.NODE_ENV === 'test') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   }));
 
