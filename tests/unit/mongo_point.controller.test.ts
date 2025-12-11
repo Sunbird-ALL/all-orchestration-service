@@ -3,6 +3,16 @@ import pointerController from '../../src/mongo_module/modules/point/point.contro
 import pointerServices from '../../src/mongo_module/modules/point/point.services';
 import HttpException from '../../src/common/http.Exception/http.Exception';
 import HttpResponse from '../../src/common/http.Response/http.Response';
+import {
+  createMockRequest,
+  createMockResponse,
+  createMockNext,
+  createSuccessServiceCallback,
+  createErrorServiceCallback,
+  createExceptionServiceCallback,
+  expectControllerSuccess,
+  expectControllerError,
+} from '../helpers/test-utils';
 
 jest.mock('../../src/mongo_module/modules/point/point.services');
 
@@ -10,19 +20,17 @@ describe('pointerController (MongoDB)', () => {
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
   let mockNext: jest.Mock;
+  let statusSpy: jest.Mock;
+  let sendSpy: jest.Mock;
 
   beforeEach(() => {
-    mockRequest = {
-      body: {},
-      params: {},
-      query: {},
-    };
-    mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn().mockReturnThis(),
-      locals: { virtual_id: '123' },
-    };
-    mockNext = jest.fn();
+    const responseMocks = createMockResponse();
+    mockResponse = responseMocks.mockResponse;
+    statusSpy = responseMocks.statusSpy;
+    sendSpy = responseMocks.sendSpy;
+    mockNext = createMockNext();
+    mockRequest = createMockRequest();
+    (mockResponse as any).locals = { virtual_id: '123' };
     jest.clearAllMocks();
   });
 
@@ -36,21 +44,20 @@ describe('pointerController (MongoDB)', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
 
     it('should successfully add a point', async () => {
-      mockRequest.body = { 
+      const pointData = { 
         sessionId: 'session123',
         language: 'en',
         milestone: 'milestone1',
         points: 100
       };
+      mockRequest.body = pointData;
 
       (pointerServices.addPoint as jest.Mock).mockImplementation(
-        (pointer: any, callback: CallableFunction) => {
-          callback(null, { id: '123', ...pointer });
-        }
+        createSuccessServiceCallback({ id: '123', ...pointData })
       );
 
       await pointerController.addPoint(
@@ -59,7 +66,7 @@ describe('pointerController (MongoDB)', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expectControllerSuccess(statusSpy, sendSpy);
       expect(pointerServices.addPoint).toHaveBeenCalledWith(
         expect.objectContaining({ userId: '123' }),
         expect.any(Function)
@@ -70,9 +77,7 @@ describe('pointerController (MongoDB)', () => {
       mockRequest.body = { points: 100 };
 
       (pointerServices.addPoint as jest.Mock).mockImplementation(
-        (pointer: any, callback: CallableFunction) => {
-          callback(new Error('Database error'), null);
-        }
+        createErrorServiceCallback('Database error')
       );
 
       await pointerController.addPoint(
@@ -81,15 +86,15 @@ describe('pointerController (MongoDB)', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
 
     it('should handle exceptions', async () => {
       mockRequest.body = {};
 
-      (pointerServices.addPoint as jest.Mock).mockImplementation(() => {
-        throw new Error('Unexpected error');
-      });
+      (pointerServices.addPoint as jest.Mock).mockImplementation(
+        createExceptionServiceCallback('Unexpected error')
+      );
 
       await pointerController.addPoint(
         mockRequest as Request,
@@ -97,7 +102,7 @@ describe('pointerController (MongoDB)', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
   });
 
@@ -112,7 +117,7 @@ describe('pointerController (MongoDB)', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
 
     it('should return points for user', async () => {
@@ -131,7 +136,7 @@ describe('pointerController (MongoDB)', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expectControllerSuccess(statusSpy, sendSpy);
       expect(pointerServices.getPointsByUserID).toHaveBeenCalledWith(
         '123',
         'session123',
@@ -156,16 +161,16 @@ describe('pointerController (MongoDB)', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
 
     it('should handle exceptions', async () => {
       mockRequest.params = { sessionId: 'session123' };
       mockRequest.query = { language: 'en' };
 
-      (pointerServices.getPointsByUserID as jest.Mock).mockImplementation(() => {
-        throw new Error('Unexpected error');
-      });
+      (pointerServices.getPointsByUserID as jest.Mock).mockImplementation(
+        createExceptionServiceCallback('Unexpected error')
+      );
 
       await pointerController.getPointsByUserId(
         mockRequest as Request,
@@ -173,7 +178,7 @@ describe('pointerController (MongoDB)', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
   });
 });

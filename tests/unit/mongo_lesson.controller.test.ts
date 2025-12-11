@@ -3,6 +3,16 @@ import lessonController from '../../src/mongo_module/modules/lesson/lesson.contr
 import lessonServices from '../../src/mongo_module/modules/lesson/lesson.services';
 import HttpException from '../../src/common/http.Exception/http.Exception';
 import HttpResponse from '../../src/common/http.Response/http.Response';
+import {
+  createMockRequest,
+  createMockResponse,
+  createMockNext,
+  createSuccessServiceCallback,
+  createErrorServiceCallback,
+  createExceptionServiceCallback,
+  expectControllerSuccess,
+  expectControllerError,
+} from '../helpers/test-utils';
 
 jest.mock('../../src/mongo_module/modules/lesson/lesson.services');
 
@@ -10,19 +20,17 @@ describe('lessonController (MongoDB)', () => {
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
   let mockNext: jest.Mock;
+  let statusSpy: jest.Mock;
+  let sendSpy: jest.Mock;
 
   beforeEach(() => {
-    mockRequest = {
-      body: {},
-      params: {},
-      query: {},
-    };
-    mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn().mockReturnThis(),
-      locals: { virtual_id: '123' },
-    };
-    mockNext = jest.fn();
+    const responseMocks = createMockResponse();
+    mockResponse = responseMocks.mockResponse;
+    statusSpy = responseMocks.statusSpy;
+    sendSpy = responseMocks.sendSpy;
+    mockNext = createMockNext();
+    mockRequest = createMockRequest();
+    (mockResponse as any).locals = { virtual_id: '123' };
     jest.clearAllMocks();
   });
 
@@ -36,11 +44,11 @@ describe('lessonController (MongoDB)', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
 
     it('should successfully add a lesson', async () => {
-      mockRequest.body = { 
+      const lessonData = { 
         sessionId: 'session123',
         language: 'en',
         milestone: 'milestone1',
@@ -48,11 +56,10 @@ describe('lessonController (MongoDB)', () => {
         lesson: 'lesson1',
         progress: 50
       };
+      mockRequest.body = lessonData;
 
       (lessonServices.addLesson as jest.Mock).mockImplementation(
-        (lesson: any, callback: CallableFunction) => {
-          callback(null, { id: '123', ...lesson });
-        }
+        createSuccessServiceCallback({ id: '123', ...lessonData })
       );
 
       await lessonController.addLesson(
@@ -61,7 +68,7 @@ describe('lessonController (MongoDB)', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expectControllerSuccess(statusSpy, sendSpy);
       expect(lessonServices.addLesson).toHaveBeenCalledWith(
         expect.objectContaining({ userId: '123' }),
         expect.any(Function)
@@ -72,9 +79,7 @@ describe('lessonController (MongoDB)', () => {
       mockRequest.body = { title: 'Test Lesson' };
 
       (lessonServices.addLesson as jest.Mock).mockImplementation(
-        (lesson: any, callback: CallableFunction) => {
-          callback(new Error('Database error'), null);
-        }
+        createErrorServiceCallback('Database error')
       );
 
       await lessonController.addLesson(
@@ -83,15 +88,15 @@ describe('lessonController (MongoDB)', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
 
     it('should handle exceptions', async () => {
       mockRequest.body = {};
 
-      (lessonServices.addLesson as jest.Mock).mockImplementation(() => {
-        throw new Error('Unexpected error');
-      });
+      (lessonServices.addLesson as jest.Mock).mockImplementation(
+        createExceptionServiceCallback('Unexpected error')
+      );
 
       await lessonController.addLesson(
         mockRequest as Request,
@@ -99,7 +104,7 @@ describe('lessonController (MongoDB)', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
   });
 
@@ -113,7 +118,7 @@ describe('lessonController (MongoDB)', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
 
     it('should return lesson progress', async () => {
@@ -131,7 +136,7 @@ describe('lessonController (MongoDB)', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expectControllerSuccess(statusSpy, sendSpy);
       expect(lessonServices.getLessonProgress).toHaveBeenCalledWith(
         '123',
         'en',
@@ -143,9 +148,7 @@ describe('lessonController (MongoDB)', () => {
       mockRequest.query = { language: 'en' };
 
       (lessonServices.getLessonProgress as jest.Mock).mockImplementation(
-        (userId: string, language: string, callback: CallableFunction) => {
-          callback(new Error('Not found'), null);
-        }
+        createErrorServiceCallback('Not found')
       );
 
       await lessonController.getLessonProgress(
@@ -154,15 +157,15 @@ describe('lessonController (MongoDB)', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
 
     it('should handle exceptions', async () => {
       mockRequest.query = { language: 'en' };
 
-      (lessonServices.getLessonProgress as jest.Mock).mockImplementation(() => {
-        throw new Error('Unexpected error');
-      });
+      (lessonServices.getLessonProgress as jest.Mock).mockImplementation(
+        createExceptionServiceCallback('Unexpected error')
+      );
 
       await lessonController.getLessonProgress(
         mockRequest as Request,
@@ -170,7 +173,7 @@ describe('lessonController (MongoDB)', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
   });
 });

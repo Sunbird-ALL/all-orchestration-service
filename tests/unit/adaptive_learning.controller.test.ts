@@ -3,6 +3,15 @@ import AdaptiveLearningController from '../../src/mongo_module/modules/adaptiveL
 import AdaptiveLearningServices from '../../src/mongo_module/modules/adaptiveLearning/adaptive_learning.service';
 import HttpException from '../../src/common/http.Exception/http.Exception';
 import HttpResponse from '../../src/common/http.Response/http.Response';
+import {
+  createMockRequest,
+  createMockResponse,
+  createMockNext,
+  createSuccessServiceCallback,
+  createErrorServiceCallback,
+  expectControllerSuccess,
+  expectControllerError,
+} from '../helpers/test-utils';
 
 jest.mock('../../src/mongo_module/modules/adaptiveLearning/adaptive_learning.service');
 
@@ -10,18 +19,16 @@ describe('AdaptiveLearningController', () => {
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
   let mockNext: jest.Mock;
+  let statusSpy: jest.Mock;
+  let sendSpy: jest.Mock;
 
   beforeEach(() => {
-    mockRequest = {
-      body: {},
-      params: {},
-      query: {},
-    };
-    mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn().mockReturnThis(),
-    };
-    mockNext = jest.fn();
+    const responseMocks = createMockResponse();
+    mockResponse = responseMocks.mockResponse;
+    statusSpy = responseMocks.statusSpy;
+    sendSpy = responseMocks.sendSpy;
+    mockNext = createMockNext();
+    mockRequest = createMockRequest();
     jest.clearAllMocks();
   });
 
@@ -35,16 +42,14 @@ describe('AdaptiveLearningController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
 
     it('should successfully add school UDISE', async () => {
       mockRequest.body = { udise_code: '123456', school_name: 'Test School' };
 
       (AdaptiveLearningServices.addSchoolUdise as jest.Mock).mockImplementation(
-        (data: any, callback: CallableFunction) => {
-          callback(null, { id: '123', ...data });
-        }
+        createSuccessServiceCallback({ id: '123', udise_code: '123456', school_name: 'Test School' })
       );
 
       await AdaptiveLearningController.addSchoolUdise(
@@ -53,16 +58,14 @@ describe('AdaptiveLearningController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expectControllerSuccess(statusSpy, sendSpy);
     });
 
     it('should return 400 on service error', async () => {
       mockRequest.body = { udiseCode: '123456' };
 
       (AdaptiveLearningServices.addSchoolUdise as jest.Mock).mockImplementation(
-        (data: any, callback: CallableFunction) => {
-          callback(new Error('Database error'), null);
-        }
+        createErrorServiceCallback('Database error')
       );
 
       await AdaptiveLearningController.addSchoolUdise(
@@ -71,7 +74,7 @@ describe('AdaptiveLearningController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
   });
 
@@ -85,7 +88,7 @@ describe('AdaptiveLearningController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
 
     it('should return school data for valid UDISE code', async () => {
@@ -103,7 +106,7 @@ describe('AdaptiveLearningController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expectControllerSuccess(statusSpy, sendSpy);
     });
   });
 
@@ -117,7 +120,7 @@ describe('AdaptiveLearningController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
 
     it('should successfully delete UDISE code', async () => {
@@ -135,7 +138,7 @@ describe('AdaptiveLearningController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expectControllerSuccess(statusSpy, sendSpy);
     });
   });
 
@@ -153,14 +156,12 @@ describe('AdaptiveLearningController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expectControllerSuccess(statusSpy, sendSpy);
     });
 
     it('should return 400 on service error', async () => {
       (AdaptiveLearningServices.getAllUdeise as jest.Mock).mockImplementation(
-        (callback: CallableFunction) => {
-          callback(new Error('Database error'), null);
-        }
+        createErrorServiceCallback('Database error')
       );
 
       await AdaptiveLearningController.getAllUdeise(
@@ -169,7 +170,7 @@ describe('AdaptiveLearningController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
   });
 });

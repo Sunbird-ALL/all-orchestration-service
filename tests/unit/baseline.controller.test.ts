@@ -3,6 +3,15 @@ import BaselineController from '../../src/mongo_module/modules/baseline_assessme
 import BaselineService from '../../src/mongo_module/modules/baseline_assessment/baseline.service';
 import HttpException from '../../src/common/http.Exception/http.Exception';
 import HttpResponse from '../../src/common/http.Response/http.Response';
+import {
+  createMockRequest,
+  createMockResponse,
+  createMockNext,
+  createSuccessServiceCallback,
+  createErrorServiceCallback,
+  createExceptionServiceCallback,
+  expectControllerSuccess,
+} from '../helpers/test-utils';
 
 jest.mock('../../src/mongo_module/modules/baseline_assessment/baseline.service');
 
@@ -10,29 +19,26 @@ describe('BaselineController', () => {
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
   let mockNext: jest.Mock;
+  let statusSpy: jest.Mock;
+  let sendSpy: jest.Mock;
 
   beforeEach(() => {
-    mockRequest = {
-      body: {},
-      params: {},
-      query: {},
-    };
-    mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn().mockReturnThis(),
-    };
-    mockNext = jest.fn();
+    const responseMocks = createMockResponse();
+    mockResponse = responseMocks.mockResponse;
+    statusSpy = responseMocks.statusSpy;
+    sendSpy = responseMocks.sendSpy;
+    mockNext = createMockNext();
+    mockRequest = createMockRequest();
     jest.clearAllMocks();
   });
 
   describe('addBaseline', () => {
     it('should successfully add baseline assessment', async () => {
-      mockRequest.body = { studentId: '123', assessmentId: '456', score: 85 };
+      const baselineData = { studentId: '123', assessmentId: '456', score: 85 };
+      mockRequest.body = baselineData;
 
       (BaselineService.addBaseline as jest.Mock).mockImplementation(
-        (data: any, callback: CallableFunction) => {
-          callback(null, { id: '123', ...data });
-        }
+        createSuccessServiceCallback({ id: '123', ...baselineData })
       );
 
       await BaselineController.addBaseline(
@@ -41,17 +47,14 @@ describe('BaselineController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
-      expect(mockResponse.send).toHaveBeenCalledWith(expect.any(HttpResponse));
+      expectControllerSuccess(statusSpy, sendSpy);
     });
 
     it('should call next with error on service error', async () => {
       mockRequest.body = { studentId: '123' };
 
       (BaselineService.addBaseline as jest.Mock).mockImplementation(
-        (data: any, callback: CallableFunction) => {
-          callback(new Error('Database error'), null);
-        }
+        createErrorServiceCallback('Database error')
       );
 
       await BaselineController.addBaseline(
@@ -66,9 +69,9 @@ describe('BaselineController', () => {
     it('should handle exceptions', async () => {
       mockRequest.body = {};
 
-      (BaselineService.addBaseline as jest.Mock).mockImplementation(() => {
-        throw new Error('Unexpected error');
-      });
+      (BaselineService.addBaseline as jest.Mock).mockImplementation(
+        createExceptionServiceCallback('Unexpected error')
+      );
 
       await BaselineController.addBaseline(
         mockRequest as Request,
@@ -96,7 +99,7 @@ describe('BaselineController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expectControllerSuccess(statusSpy, sendSpy);
       expect(BaselineService.getBaseline).toHaveBeenCalledWith(
         '123',
         '456',
@@ -125,9 +128,9 @@ describe('BaselineController', () => {
     it('should handle exceptions', async () => {
       mockRequest.params = { studentId: '123', assessment_id: '456' };
 
-      (BaselineService.getBaseline as jest.Mock).mockImplementation(() => {
-        throw new Error('Unexpected error');
-      });
+      (BaselineService.getBaseline as jest.Mock).mockImplementation(
+        createExceptionServiceCallback('Unexpected error')
+      );
 
       await BaselineController.getBaseline(
         mockRequest as Request,

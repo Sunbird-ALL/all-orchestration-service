@@ -3,6 +3,16 @@ import pointerController from '../../src/sql_module/module/pointer_Module/pointe
 import pointerSqlService from '../../src/sql_module/module/pointer_Module/pointerScrvice';
 import HttpException from '../../src/common/http.Exception/http.Exception';
 import HttpResponse from '../../src/common/http.Response/http.Response';
+import {
+  createMockRequest,
+  createMockResponse,
+  createMockNext,
+  createSuccessServiceCallback,
+  createErrorServiceCallback,
+  createExceptionServiceCallback,
+  expectControllerSuccess,
+  expectControllerError,
+} from '../helpers/test-utils';
 
 jest.mock('../../src/sql_module/module/pointer_Module/pointerScrvice');
 
@@ -10,18 +20,16 @@ describe('pointerController', () => {
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
   let mockNext: jest.Mock;
+  let statusSpy: jest.Mock;
+  let sendSpy: jest.Mock;
 
   beforeEach(() => {
-    mockRequest = {
-      body: {},
-      params: {},
-      query: {},
-    };
-    mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn().mockReturnThis(),
-    };
-    mockNext = jest.fn();
+    const responseMocks = createMockResponse();
+    mockResponse = responseMocks.mockResponse;
+    statusSpy = responseMocks.statusSpy;
+    sendSpy = responseMocks.sendSpy;
+    mockNext = createMockNext();
+    mockRequest = createMockRequest();
     jest.clearAllMocks();
   });
 
@@ -31,9 +39,7 @@ describe('pointerController', () => {
       mockRequest.body = mockPointer;
 
       (pointerSqlService.addPointer as jest.Mock).mockImplementation(
-        (pointer: any, callback: CallableFunction) => {
-          callback(null, { id: 1, ...pointer });
-        }
+        createSuccessServiceCallback({ id: 1, ...mockPointer })
       );
 
       await pointerController.addPointer(
@@ -42,17 +48,14 @@ describe('pointerController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
-      expect(mockResponse.send).toHaveBeenCalledWith(expect.any(HttpResponse));
+      expectControllerSuccess(statusSpy, sendSpy);
     });
 
     it('should return 400 when service returns error', async () => {
       mockRequest.body = { userId: '123' };
 
       (pointerSqlService.addPointer as jest.Mock).mockImplementation(
-        (pointer: any, callback: CallableFunction) => {
-          callback(new Error('Database error'), null);
-        }
+        createErrorServiceCallback('Database error')
       );
 
       await pointerController.addPointer(
@@ -61,15 +64,15 @@ describe('pointerController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
 
     it('should handle exceptions', async () => {
       mockRequest.body = {};
 
-      (pointerSqlService.addPointer as jest.Mock).mockImplementation(() => {
-        throw new Error('Unexpected error');
-      });
+      (pointerSqlService.addPointer as jest.Mock).mockImplementation(
+        createExceptionServiceCallback('Unexpected error')
+      );
 
       await pointerController.addPointer(
         mockRequest as Request,
@@ -77,52 +80,30 @@ describe('pointerController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
   });
 
   describe('getPointersByUserId', () => {
-    it('should return 400 if userId is null', async () => {
-      mockRequest.params = { userId: 'null', sessionId: 'session123' };
-      mockRequest.query = { language: 'en' };
+    const testNullParameter = (paramName: string, params: any, query: any) => {
+      it(`should return 400 if ${paramName} is null`, async () => {
+        mockRequest.params = params;
+        mockRequest.query = query;
 
-      await pointerController.getPointersByUserId(
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+        await pointerController.getPointersByUserId(
+          mockRequest as Request,
+          mockResponse as Response,
+          mockNext
+        );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
-      expect(pointerSqlService.getPointersByUserID).not.toHaveBeenCalled();
-    });
+        expectControllerError(statusSpy);
+        expect(pointerSqlService.getPointersByUserID).not.toHaveBeenCalled();
+      });
+    };
 
-    it('should return 400 if sessionId is null', async () => {
-      mockRequest.params = { userId: 'user123', sessionId: 'null' };
-      mockRequest.query = { language: 'en' };
-
-      await pointerController.getPointersByUserId(
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
-
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
-      expect(pointerSqlService.getPointersByUserID).not.toHaveBeenCalled();
-    });
-
-    it('should return 400 if language is null', async () => {
-      mockRequest.params = { userId: 'user123', sessionId: 'session123' };
-      mockRequest.query = { language: 'null' };
-
-      await pointerController.getPointersByUserId(
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
-
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
-      expect(pointerSqlService.getPointersByUserID).not.toHaveBeenCalled();
-    });
+    testNullParameter('userId', { userId: 'null', sessionId: 'session123' }, { language: 'en' });
+    testNullParameter('sessionId', { userId: 'user123', sessionId: 'null' }, { language: 'en' });
+    testNullParameter('language', { userId: 'user123', sessionId: 'session123' }, { language: 'null' });
 
     it('should return pointers when all parameters are valid', async () => {
       mockRequest.params = { userId: 'user123', sessionId: 'session123' };
@@ -140,7 +121,7 @@ describe('pointerController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expectControllerSuccess(statusSpy, sendSpy);
       expect(pointerSqlService.getPointersByUserID).toHaveBeenCalledWith(
         'user123',
         'session123',
@@ -165,16 +146,16 @@ describe('pointerController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
 
     it('should handle exceptions', async () => {
       mockRequest.params = { userId: 'user123', sessionId: 'session123' };
       mockRequest.query = { language: 'en' };
 
-      (pointerSqlService.getPointersByUserID as jest.Mock).mockImplementation(() => {
-        throw new Error('Unexpected error');
-      });
+      (pointerSqlService.getPointersByUserID as jest.Mock).mockImplementation(
+        createExceptionServiceCallback('Unexpected error')
+      );
 
       await pointerController.getPointersByUserId(
         mockRequest as Request,
@@ -182,7 +163,7 @@ describe('pointerController', () => {
         mockNext
       );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expectControllerError(statusSpy);
     });
   });
 });

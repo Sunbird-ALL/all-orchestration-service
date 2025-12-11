@@ -1,6 +1,11 @@
 import lessonSqlService from "../../src/sql_module/module/lesson_Module/lessonService";
 import { myDataSource } from "../../src/sql_module/config/data.config";
 import { Lesson } from "../../src/sql_module/schema/lesson";
+import {
+  createMockNext,
+  expectServiceCallbackSuccess,
+  expectServiceCallbackError,
+} from "../helpers/test-utils";
 
 // Mock the data source
 jest.mock("../../src/sql_module/config/data.config", () => ({
@@ -14,7 +19,7 @@ describe("lessonSqlService", () => {
   let mockNext: jest.Mock;
 
   beforeEach(() => {
-    mockNext = jest.fn();
+    mockNext = createMockNext();
     mockRepository = {
       create: jest.fn(),
       save: jest.fn(),
@@ -44,7 +49,7 @@ describe("lessonSqlService", () => {
 
       expect(mockRepository.create).toHaveBeenCalledWith(lesson);
       expect(mockRepository.save).toHaveBeenCalledWith(createdLesson);
-      expect(mockNext).toHaveBeenCalledWith(null, createdLesson);
+      expectServiceCallbackSuccess(mockNext, createdLesson);
     });
 
     it("should handle errors when adding lesson", async () => {
@@ -61,7 +66,7 @@ describe("lessonSqlService", () => {
 
       await lessonSqlService.addLessonSql(lesson, mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith(error, "Something went wrong!");
+      expectServiceCallbackError(mockNext, error, "Something went wrong!");
     });
   });
 
@@ -88,7 +93,7 @@ describe("lessonSqlService", () => {
         where: { userId: userID, language: language },
         order: { createdAt: "DESC" },
       });
-      expect(mockNext).toHaveBeenCalledWith(null, { result: mockResult[0] });
+      expectServiceCallbackSuccess(mockNext, { result: mockResult[0] });
     });
 
     it("should return 'No data found' when no data exists", async () => {
@@ -99,7 +104,7 @@ describe("lessonSqlService", () => {
 
       await lessonSqlService.getLessonProgress(userID, language, mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith(null, "No data found for this user!");
+      expectServiceCallbackSuccess(mockNext, "No data found for this user!");
     });
 
     it("should handle errors when getting lesson progress", async () => {
@@ -111,7 +116,7 @@ describe("lessonSqlService", () => {
 
       await lessonSqlService.getLessonProgress(userID, language, mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith("Something went wrong");
+      expectServiceCallbackError(mockNext, "Something went wrong");
     });
   });
 });

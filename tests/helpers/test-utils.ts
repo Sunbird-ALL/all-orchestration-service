@@ -5,6 +5,7 @@
 
 import { Request, Response } from "express";
 import { Readable } from "stream";
+import HttpResponse from "../../src/common/http.Response/http.Response";
 
 /**
  * Creates a mock Express Request object
@@ -334,4 +335,57 @@ export function expectServiceCallbackSuccess(
   expectedResult: any
 ): void {
   expect(mockNext).toHaveBeenCalledWith(null, expectedResult);
+}
+
+/**
+ * Creates a mock service callback implementation for success cases
+ */
+export function createSuccessServiceCallback(result: any) {
+  return (data: any, callback: CallableFunction) => {
+    callback(null, result || { id: 1, ...data });
+  };
+}
+
+/**
+ * Creates a mock service callback implementation for error cases
+ */
+export function createErrorServiceCallback(
+  errorMessage: string = "Database error"
+) {
+  return (data: any, callback: CallableFunction) => {
+    callback(new Error(errorMessage), null);
+  };
+}
+
+/**
+ * Creates a mock service callback implementation that throws an exception
+ */
+export function createExceptionServiceCallback(
+  errorMessage: string = "Unexpected error"
+) {
+  return () => {
+    throw new Error(errorMessage);
+  };
+}
+
+/**
+ * Helper to test controller success response
+ */
+export function expectControllerSuccess(
+  statusSpy: jest.Mock,
+  sendSpy: jest.Mock,
+  expectedStatus: number = 200
+): void {
+  expect(statusSpy).toHaveBeenCalledWith(expectedStatus);
+  expect(sendSpy).toHaveBeenCalledWith(expect.any(HttpResponse));
+}
+
+/**
+ * Helper to test controller error response
+ */
+export function expectControllerError(
+  statusSpy: jest.Mock,
+  expectedStatus: number = 400
+): void {
+  expect(statusSpy).toHaveBeenCalledWith(expectedStatus);
 }
