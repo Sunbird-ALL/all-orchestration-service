@@ -1,6 +1,12 @@
 import AdaptiveLearningServices from "../../src/mongo_module/modules/adaptiveLearning/adaptive_learning.service";
 import CrudOperations from "../../src/common/crud";
 import adaptiveLearning from "../../src/mongo_module/models/adaptiveLearning";
+import {
+  createMockCrudOperations,
+  setupServiceMocks,
+  expectServiceCallbackError,
+  expectServiceCallbackSuccess,
+} from "../helpers/test-utils";
 
 // Mock CrudOperations
 jest.mock("../../src/common/crud");
@@ -10,27 +16,15 @@ jest.mock("../../src/mongo_module/models/adaptiveLearning", () => ({
 }));
 
 describe("AdaptiveLearningServices", () => {
-  let mockCrudOperations: jest.Mocked<CrudOperations>;
+  let mockCrudOperations: any;
   let mockNext: jest.Mock;
   let mockAdaptiveLearningInstance: any;
 
   beforeEach(() => {
     mockNext = jest.fn();
     mockAdaptiveLearningInstance = {};
-
-    mockCrudOperations = {
-      getDocument: jest.fn(),
-      save: jest.fn(),
-      getAllDocuments: jest.fn(),
-      deleteDocument: jest.fn(),
-    } as any;
-
-    (CrudOperations as jest.MockedClass<typeof CrudOperations>).mockImplementation(
-      () => mockCrudOperations
-    );
-    (adaptiveLearning as jest.MockedClass<typeof adaptiveLearning>).mockImplementation(
-      () => mockAdaptiveLearningInstance
-    );
+    mockCrudOperations = createMockCrudOperations();
+    setupServiceMocks(CrudOperations, adaptiveLearning, mockCrudOperations, mockAdaptiveLearningInstance);
   });
 
   afterEach(() => {
@@ -55,7 +49,7 @@ describe("AdaptiveLearningServices", () => {
         {}
       );
       expect(mockCrudOperations.save).toHaveBeenCalled();
-      expect(mockNext).toHaveBeenCalledWith(null, savedData);
+      expectServiceCallbackSuccess(mockNext, savedData);
     });
 
     it("should return error if UDISE code already exists", async () => {
@@ -71,7 +65,7 @@ describe("AdaptiveLearningServices", () => {
 
       expect(mockCrudOperations.getDocument).toHaveBeenCalled();
       expect(mockCrudOperations.save).not.toHaveBeenCalled();
-      expect(mockNext).toHaveBeenCalledWith(null, "udise_code is already exists");
+      expectServiceCallbackSuccess(mockNext, "udise_code is already exists");
     });
 
     it("should handle errors when adding school UDISE", async () => {
@@ -85,7 +79,7 @@ describe("AdaptiveLearningServices", () => {
 
       await AdaptiveLearningServices.addSchoolUdise(schoolData, mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith(error, "Something went wrong!");
+      expectServiceCallbackError(mockNext, error, "Something went wrong!");
     });
   });
 
@@ -102,7 +96,7 @@ describe("AdaptiveLearningServices", () => {
         { udise_code: udiseCode },
         {}
       );
-      expect(mockNext).toHaveBeenCalledWith(null, { status: true });
+      expectServiceCallbackSuccess(mockNext, { status: true });
     });
 
     it("should return status false if UDISE code does not exist", async () => {
@@ -112,7 +106,7 @@ describe("AdaptiveLearningServices", () => {
 
       await AdaptiveLearningServices.validateUdise(udiseCode, mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith(null, { status: false });
+      expectServiceCallbackSuccess(mockNext, { status: false });
     });
 
     it("should handle errors when validating UDISE", async () => {
@@ -123,7 +117,7 @@ describe("AdaptiveLearningServices", () => {
 
       await AdaptiveLearningServices.validateUdise(udiseCode, mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith("Something went wrong");
+      expectServiceCallbackError(mockNext, "Something went wrong");
     });
   });
 
@@ -144,7 +138,7 @@ describe("AdaptiveLearningServices", () => {
       expect(mockCrudOperations.deleteDocument).toHaveBeenCalledWith({
         udise_code: udiseCode,
       });
-      expect(mockNext).toHaveBeenCalledWith(null, "record deleted successfully!");
+      expectServiceCallbackSuccess(mockNext, "record deleted successfully!");
     });
 
     it("should return error if UDISE code not found", async () => {
@@ -156,7 +150,7 @@ describe("AdaptiveLearningServices", () => {
 
       expect(mockCrudOperations.getDocument).toHaveBeenCalled();
       expect(mockCrudOperations.deleteDocument).not.toHaveBeenCalled();
-      expect(mockNext).toHaveBeenCalledWith(null, "No record found to delete");
+      expectServiceCallbackSuccess(mockNext, "No record found to delete");
     });
 
     it("should handle errors when deleting UDISE", async () => {
@@ -167,7 +161,7 @@ describe("AdaptiveLearningServices", () => {
 
       await AdaptiveLearningServices.deleteUdise(udiseCode, mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith(error, "Something went wrong!");
+      expectServiceCallbackError(mockNext, error, "Something went wrong!");
     });
   });
 
@@ -183,7 +177,7 @@ describe("AdaptiveLearningServices", () => {
       await AdaptiveLearningServices.getAllUdeise(mockNext);
 
       expect(mockCrudOperations.getAllDocuments).toHaveBeenCalledWith({}, {}, {});
-      expect(mockNext).toHaveBeenCalledWith(null, allRecords);
+      expectServiceCallbackSuccess(mockNext, allRecords);
     });
 
     it("should handle errors when getting all UDISE codes", async () => {
@@ -193,7 +187,7 @@ describe("AdaptiveLearningServices", () => {
 
       await AdaptiveLearningServices.getAllUdeise(mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith("Something went wrong");
+      expectServiceCallbackError(mockNext, "Something went wrong");
     });
   });
 });

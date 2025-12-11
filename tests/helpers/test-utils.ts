@@ -269,3 +269,69 @@ export function resetTestMocks(): void {
   jest.clearAllMocks();
   setupMulterCallback();
 }
+
+/**
+ * Creates a mock CrudOperations instance for service tests
+ */
+export function createMockCrudOperations(methods: string[] = []): any {
+  const defaultMethods = [
+    "getDocument",
+    "save",
+    "getAllDocuments",
+    "deleteDocument",
+    "cummumulativeScoreDocument",
+    "lessonScoreDocuments",
+    "getAlllessonMasterDocuments",
+  ];
+
+  const allMethods = [...new Set([...defaultMethods, ...methods])];
+  const mockCrud: any = {};
+
+  allMethods.forEach((method) => {
+    mockCrud[method] = jest.fn();
+  });
+
+  return mockCrud;
+}
+
+/**
+ * Sets up common service test mocks (CrudOperations and Model)
+ */
+export function setupServiceMocks(
+  CrudOperationsClass: any,
+  ModelClass: any,
+  mockCrudOperations: any,
+  mockInstance: any = {}
+): void {
+  (
+    CrudOperationsClass as jest.MockedClass<typeof CrudOperationsClass>
+  ).mockImplementation(() => mockCrudOperations);
+  (ModelClass as jest.MockedClass<typeof ModelClass>).mockImplementation(
+    () => mockInstance
+  );
+}
+
+/**
+ * Common error test helper for service callback tests
+ */
+export function expectServiceCallbackError(
+  mockNext: jest.Mock,
+  expectedError: Error | string,
+  expectedMessage?: string
+): void {
+  if (expectedMessage) {
+    expect(mockNext).toHaveBeenCalledWith(expectedError, expectedMessage);
+  } else {
+    expect(mockNext).toHaveBeenCalledWith(expectedError);
+  }
+}
+
+/**
+ * Common success test helper for service callback tests
+ */
+export function expectServiceCallbackSuccess(
+  mockNext: jest.Mock,
+  expectedResult: any
+): void {
+  expect(mockNext).toHaveBeenCalledWith(null, expectedResult);
+}

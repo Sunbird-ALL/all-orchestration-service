@@ -2,6 +2,12 @@ import MozhigalTrackerServices from "../../src/mongo_module/modules/mozhigal_tra
 import CrudOperations from "../../src/common/crud";
 import learningLogs from "../../src/mongo_module/models/mozhigalScoreTracker";
 import emisLessonMaster from "../../src/mongo_module/models/emisLessonMaster";
+import {
+  createMockCrudOperations,
+  setupServiceMocks,
+  expectServiceCallbackError,
+  expectServiceCallbackSuccess,
+} from "../helpers/test-utils";
 
 // Mock CrudOperations and models
 jest.mock("../../src/common/crud");
@@ -15,28 +21,15 @@ jest.mock("../../src/mongo_module/models/emisLessonMaster", () => ({
 }));
 
 describe("MozhigalTrackerServices", () => {
-  let mockCrudOperations: jest.Mocked<CrudOperations>;
+  let mockCrudOperations: any;
   let mockNext: jest.Mock;
   let mockLearningLogsInstance: any;
 
   beforeEach(() => {
     mockNext = jest.fn();
     mockLearningLogsInstance = {};
-
-    mockCrudOperations = {
-      getDocument: jest.fn(),
-      save: jest.fn(),
-      cummumulativeScoreDocument: jest.fn(),
-      lessonScoreDocuments: jest.fn(),
-      getAlllessonMasterDocuments: jest.fn(),
-    } as any;
-
-    (CrudOperations as jest.MockedClass<typeof CrudOperations>).mockImplementation(
-      () => mockCrudOperations
-    );
-    (learningLogs as jest.MockedClass<typeof learningLogs>).mockImplementation(
-      () => mockLearningLogsInstance
-    );
+    mockCrudOperations = createMockCrudOperations();
+    setupServiceMocks(CrudOperations, learningLogs, mockCrudOperations, mockLearningLogsInstance);
   });
 
   afterEach(() => {
@@ -78,7 +71,7 @@ describe("MozhigalTrackerServices", () => {
         {}
       );
       expect(mockCrudOperations.save).toHaveBeenCalled();
-      expect(mockNext).toHaveBeenCalledWith(null, savedLog);
+      expectServiceCallbackSuccess(mockNext, savedLog);
     });
 
     it("should return error if lesson not found", async () => {
@@ -100,7 +93,7 @@ describe("MozhigalTrackerServices", () => {
 
       expect(mockCrudOperations.getDocument).toHaveBeenCalled();
       expect(mockCrudOperations.save).not.toHaveBeenCalled();
-      expect(mockNext).toHaveBeenCalledWith(null, "No record found for this lesson_id");
+      expectServiceCallbackSuccess(mockNext, "No record found for this lesson_id");
     });
 
     it("should handle errors when adding learning logs", async () => {
@@ -121,7 +114,7 @@ describe("MozhigalTrackerServices", () => {
         mockNext
       );
 
-      expect(mockNext).toHaveBeenCalledWith(error, "Something went wrong!");
+      expectServiceCallbackError(mockNext, error, "Something went wrong!");
     });
   });
 
@@ -135,7 +128,7 @@ describe("MozhigalTrackerServices", () => {
       await MozhigalTrackerServices.getCumulativeScore(studentId, mockNext);
 
       expect(mockCrudOperations.cummumulativeScoreDocument).toHaveBeenCalledWith(studentId);
-      expect(mockNext).toHaveBeenCalledWith(null, {
+      expectServiceCallbackSuccess(mockNext, {
         studentId,
         totalScore: 250,
       });
@@ -162,10 +155,7 @@ describe("MozhigalTrackerServices", () => {
 
       await MozhigalTrackerServices.getCumulativeScore(studentId, mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith(
-        null,
-        "Student not found or no scores available"
-      );
+      expectServiceCallbackSuccess(mockNext, "Student not found or no scores available");
     });
 
     it("should handle errors when getting cumulative score", async () => {
@@ -176,7 +166,7 @@ describe("MozhigalTrackerServices", () => {
 
       await MozhigalTrackerServices.getCumulativeScore(studentId, mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith(error, "Something went wrong!");
+      expectServiceCallbackError(mockNext, error, "Something went wrong!");
     });
   });
 
@@ -199,7 +189,7 @@ describe("MozhigalTrackerServices", () => {
 
       expect(mockCrudOperations.lessonScoreDocuments).toHaveBeenCalledWith(studentId);
       expect(mockCrudOperations.getAlllessonMasterDocuments).toHaveBeenCalled();
-      expect(mockNext).toHaveBeenCalledWith(null, [
+      expectServiceCallbackSuccess(mockNext, [
         { score: 100, lesson_id: "lesson123" },
         { score: 150, lesson_id: "lesson456" },
       ]);
@@ -214,7 +204,7 @@ describe("MozhigalTrackerServices", () => {
 
       await MozhigalTrackerServices.getLessonWiseScore(studentId, mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith(null, []);
+      expectServiceCallbackSuccess(mockNext, []);
     });
 
     it("should handle errors when getting lesson-wise scores", async () => {
@@ -225,7 +215,7 @@ describe("MozhigalTrackerServices", () => {
 
       await MozhigalTrackerServices.getLessonWiseScore(studentId, mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith(error, "Something went wrong!");
+      expectServiceCallbackError(mockNext, error, "Something went wrong!");
     });
   });
 });

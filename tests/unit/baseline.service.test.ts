@@ -1,6 +1,12 @@
 import BaselineService from "../../src/mongo_module/modules/baseline_assessment/baseline.service";
 import CrudOperations from "../../src/common/crud";
 import BaselineAssessment from "../../src/mongo_module/models/baseline_assess";
+import {
+  createMockCrudOperations,
+  setupServiceMocks,
+  expectServiceCallbackError,
+  expectServiceCallbackSuccess,
+} from "../helpers/test-utils";
 
 // Mock CrudOperations
 jest.mock("../../src/common/crud");
@@ -10,7 +16,7 @@ jest.mock("../../src/mongo_module/models/baseline_assess", () => ({
 }));
 
 describe("BaselineService", () => {
-  let mockCrudOperations: jest.Mocked<CrudOperations>;
+  let mockCrudOperations: any;
   let mockNext: jest.Mock;
   let mockBaselineInstance: any;
 
@@ -19,18 +25,8 @@ describe("BaselineService", () => {
     mockBaselineInstance = {
       toObject: jest.fn().mockReturnValue({}),
     };
-
-    mockCrudOperations = {
-      getAllDocuments: jest.fn(),
-      save: jest.fn(),
-    } as any;
-
-    (CrudOperations as jest.MockedClass<typeof CrudOperations>).mockImplementation(
-      () => mockCrudOperations
-    );
-    (BaselineAssessment as jest.MockedClass<typeof BaselineAssessment>).mockImplementation(
-      () => mockBaselineInstance
-    );
+    mockCrudOperations = createMockCrudOperations();
+    setupServiceMocks(CrudOperations, BaselineAssessment, mockCrudOperations, mockBaselineInstance);
   });
 
   afterEach(() => {
@@ -61,7 +57,7 @@ describe("BaselineService", () => {
         {}
       );
       expect(mockCrudOperations.save).toHaveBeenCalled();
-      expect(mockNext).toHaveBeenCalledWith(null, { ...Baseline, _id: "123" });
+      expectServiceCallbackSuccess(mockNext, { ...Baseline, _id: "123" });
     });
 
     it("should return error if baseline already submitted", async () => {
@@ -78,10 +74,7 @@ describe("BaselineService", () => {
 
       expect(mockCrudOperations.getAllDocuments).toHaveBeenCalled();
       expect(mockCrudOperations.save).not.toHaveBeenCalled();
-      expect(mockNext).toHaveBeenCalledWith(
-        null,
-        "Baseline Quiz already submitted by this student"
-      );
+      expectServiceCallbackSuccess(mockNext, "Baseline Quiz already submitted by this student");
     });
 
     it("should handle errors when adding baseline", async () => {
@@ -96,7 +89,7 @@ describe("BaselineService", () => {
 
       await BaselineService.addBaseline(Baseline, mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith(error, "Something went wrong!");
+      expectServiceCallbackError(mockNext, error, "Something went wrong!");
     });
   });
 
@@ -121,7 +114,7 @@ describe("BaselineService", () => {
         {},
         {}
       );
-      expect(mockNext).toHaveBeenCalledWith(null, baselineData);
+      expectServiceCallbackSuccess(mockNext, baselineData);
     });
 
     it("should return all baseline data for student when assessment ID not provided", async () => {
@@ -149,7 +142,7 @@ describe("BaselineService", () => {
         {},
         {}
       );
-      expect(mockNext).toHaveBeenCalledWith(null, baselineData);
+      expectServiceCallbackSuccess(mockNext, baselineData);
     });
 
     it("should handle errors when getting baseline", async () => {
@@ -161,7 +154,7 @@ describe("BaselineService", () => {
 
       await BaselineService.getBaseline(student_id, assessment_Id, mockNext);
 
-      expect(mockNext).toHaveBeenCalledWith(error, "Something went wrong!");
+      expectServiceCallbackError(mockNext, error, "Something went wrong!");
     });
   });
 });
