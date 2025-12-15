@@ -7,9 +7,7 @@ import HttpException from "../../src/common/http.Exception/http.Exception";
 import HttpResponse from "../../src/common/http.Response/http.Response";
 import * as XLSX from "xlsx";
 import {
-  createMockRequest,
-  createMockResponse,
-  createMockNext,
+  setupControllerTest,
   createMockExcelFile,
   setupMulterMock,
   waitForAsync,
@@ -50,13 +48,13 @@ describe("virtualIdController (MongoDB)", () => {
 
   beforeEach(() => {
     resetTestMocks();
-    const responseMocks = createMockResponse();
-    mockResponse = responseMocks.mockResponse;
-    statusSpy = responseMocks.statusSpy;
-    sendSpy = responseMocks.sendSpy;
-    setHeaderSpy = responseMocks.setHeaderSpy;
-    mockNext = createMockNext();
-    mockRequest = createMockRequest();
+    const mocks = setupControllerTest({ withSetHeader: true });
+    mockRequest = mocks.mockRequest;
+    mockResponse = mocks.mockResponse;
+    mockNext = mocks.mockNext;
+    statusSpy = mocks.statusSpy;
+    sendSpy = mocks.sendSpy;
+    setHeaderSpy = mocks.setHeaderSpy!;
   });
 
   describe("genarateVirtualId", () => {

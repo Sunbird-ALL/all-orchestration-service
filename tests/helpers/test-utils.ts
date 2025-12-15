@@ -432,3 +432,89 @@ export function expectControllerError(
 ): void {
   expect(statusSpy).toHaveBeenCalledWith(expectedStatus);
 }
+
+/**
+ * Sets up standard controller test environment
+ * Returns all necessary mocks for controller testing
+ */
+export function setupControllerTest(options: {
+  withVirtualId?: boolean;
+  withSetHeader?: boolean;
+} = {}) {
+  const { withVirtualId = false, withSetHeader = false } = options;
+  
+  const responseMocks = createMockResponse();
+  const mockRequest = createMockRequest();
+  const mockNext = createMockNext();
+  
+  if (withVirtualId) {
+    (responseMocks.mockResponse as any).locals = { virtual_id: '123' };
+  }
+  
+  jest.clearAllMocks();
+  
+  return {
+    mockRequest,
+    mockResponse: responseMocks.mockResponse,
+    mockNext,
+    statusSpy: responseMocks.statusSpy,
+    sendSpy: responseMocks.sendSpy,
+    jsonSpy: responseMocks.jsonSpy,
+    setHeaderSpy: withSetHeader ? responseMocks.setHeaderSpy : undefined,
+  };
+}
+
+/**
+ * Sets up service test environment with CrudOperations and Model mocks
+ */
+export function setupServiceTest<T = any>(
+  CrudOperationsClass: any,
+  ModelClass: any,
+  mockInstance: T = {} as T
+) {
+  const mockNext = jest.fn();
+  const mockCrudOperations = createMockCrudOperations();
+  
+  setupServiceMocks(CrudOperationsClass, ModelClass, mockCrudOperations, mockInstance);
+  
+  jest.clearAllMocks();
+  
+  return {
+    mockNext,
+    mockCrudOperations,
+    mockInstance,
+  };
+}
+
+/**
+ * Creates a simple mock request/response/next for basic controller tests
+ */
+export function setupSimpleControllerTest(options: {
+  withVirtualId?: boolean;
+} = {}) {
+  const { withVirtualId = false } = options;
+  
+  const mockRequest: Partial<Request> = {
+    body: {},
+    params: {},
+    query: {},
+  };
+  
+  const mockResponse: Partial<Response> = {
+    status: jest.fn().mockReturnThis(),
+    send: jest.fn().mockReturnThis(),
+  };
+  
+  if (withVirtualId) {
+    (mockResponse as any).locals = { virtual_id: '123' };
+  }
+  
+  const mockNext = jest.fn();
+  jest.clearAllMocks();
+  
+  return {
+    mockRequest,
+    mockResponse,
+    mockNext,
+  };
+}

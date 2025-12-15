@@ -3,6 +3,7 @@ import learnerProgressSqlController from '../../src/sql_module/module/learner_pr
 import learnerProgressService from '../../src/sql_module/module/learner_progress_Module/learner_progress.service';
 import HttpException from '../../src/common/http.Exception/http.Exception';
 import HttpResponse from '../../src/common/http.Response/http.Response';
+import { setupSimpleControllerTest } from '../helpers/test-utils';
 
 jest.mock('../../src/sql_module/module/learner_progress_Module/learner_progress.service');
 
@@ -12,17 +13,10 @@ describe('learnerProgressSqlController', () => {
   let mockNext: jest.Mock;
 
   beforeEach(() => {
-    mockRequest = {
-      body: {},
-      params: {},
-      query: {},
-    };
-    mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn().mockReturnThis(),
-    };
-    mockNext = jest.fn();
-    jest.clearAllMocks();
+    const mocks = setupSimpleControllerTest();
+    mockRequest = mocks.mockRequest;
+    mockResponse = mocks.mockResponse;
+    mockNext = mocks.mockNext;
   });
 
   describe('addLearnerProgress', () => {

@@ -3,6 +3,7 @@ import MozhigalTrackerController from '../../src/mongo_module/modules/mozhigal_t
 import MozhigalTrackerServices from '../../src/mongo_module/modules/mozhigal_tracker/mozhigal_tracker.service';
 import HttpException from '../../src/common/http.Exception/http.Exception';
 import HttpResponse from '../../src/common/http.Response/http.Response';
+import { setupSimpleControllerTest } from '../helpers/test-utils';
 
 jest.mock('../../src/mongo_module/modules/mozhigal_tracker/mozhigal_tracker.service');
 
@@ -12,18 +13,10 @@ describe('MozhigalTrackerController', () => {
   let mockNext: jest.Mock;
 
   beforeEach(() => {
-    mockRequest = {
-      body: {},
-      params: {},
-      query: {},
-    };
-    mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn().mockReturnThis(),
-      locals: { virtual_id: '123' },
-    };
-    mockNext = jest.fn();
-    jest.clearAllMocks();
+    const mocks = setupSimpleControllerTest({ withVirtualId: true });
+    mockRequest = mocks.mockRequest;
+    mockResponse = mocks.mockResponse;
+    mockNext = mocks.mockNext;
   });
 
   describe('addLearningLogs', () => {

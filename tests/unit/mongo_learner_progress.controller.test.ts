@@ -3,6 +3,7 @@ import LearnerProgressController from '../../src/mongo_module/modules/learner_pr
 import learnerProgressServices from '../../src/mongo_module/modules/learner_progress/learner_progress.services';
 import HttpException from '../../src/common/http.Exception/http.Exception';
 import HttpResponse from '../../src/common/http.Response/http.Response';
+import { setupSimpleControllerTest } from '../helpers/test-utils';
 
 jest.mock('../../src/mongo_module/modules/learner_progress/learner_progress.services');
 
@@ -12,18 +13,10 @@ describe('LearnerProgressController (MongoDB)', () => {
   let mockNext: jest.Mock;
 
   beforeEach(() => {
-    mockRequest = {
-      body: {},
-      params: {},
-      query: {},
-    };
-    mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn().mockReturnThis(),
-      locals: { virtual_id: '123' },
-    };
-    mockNext = jest.fn();
-    jest.clearAllMocks();
+    const mocks = setupSimpleControllerTest({ withVirtualId: true });
+    mockRequest = mocks.mockRequest;
+    mockResponse = mocks.mockResponse;
+    mockNext = mocks.mockNext;
   });
 
   describe('createLearnerProgress', () => {

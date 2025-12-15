@@ -3,6 +3,7 @@ import virtualIdSqlController from '../../src/sql_module/module/virtual_Id_Modul
 import virtualIdSqlSqlService from '../../src/sql_module/module/virtual_Id_Module/virtual_id.service';
 import HttpException from '../../src/common/http.Exception/http.Exception';
 import HttpResponse from '../../src/common/http.Response/http.Response';
+import { setupSimpleControllerTest } from '../helpers/test-utils';
 
 // Mock the service
 jest.mock('../../src/sql_module/module/virtual_Id_Module/virtual_id.service');
@@ -13,15 +14,10 @@ describe('virtualIdSqlController', () => {
   let mockNext: jest.Mock;
 
   beforeEach(() => {
-    mockRequest = {
-      query: {},
-    };
-    mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn().mockReturnThis(),
-    };
-    mockNext = jest.fn();
-    jest.clearAllMocks();
+    const mocks = setupSimpleControllerTest();
+    mockRequest = mocks.mockRequest;
+    mockResponse = mocks.mockResponse;
+    mockNext = mocks.mockNext;
   });
 
   describe('genarateVirtualId', () => {

@@ -4,9 +4,7 @@ import BaselineService from '../../src/mongo_module/modules/baseline_assessment/
 import HttpException from '../../src/common/http.Exception/http.Exception';
 import HttpResponse from '../../src/common/http.Response/http.Response';
 import {
-  createMockRequest,
-  createMockResponse,
-  createMockNext,
+  setupControllerTest,
   createSuccessServiceCallback,
   createErrorServiceCallback,
   createExceptionServiceCallback,
@@ -23,13 +21,12 @@ describe('BaselineController', () => {
   let sendSpy: jest.Mock;
 
   beforeEach(() => {
-    const responseMocks = createMockResponse();
-    mockResponse = responseMocks.mockResponse;
-    statusSpy = responseMocks.statusSpy;
-    sendSpy = responseMocks.sendSpy;
-    mockNext = createMockNext();
-    mockRequest = createMockRequest();
-    jest.clearAllMocks();
+    const mocks = setupControllerTest();
+    mockRequest = mocks.mockRequest;
+    mockResponse = mocks.mockResponse;
+    mockNext = mocks.mockNext;
+    statusSpy = mocks.statusSpy;
+    sendSpy = mocks.sendSpy;
   });
 
   describe('addBaseline', () => {
