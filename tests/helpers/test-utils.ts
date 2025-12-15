@@ -605,3 +605,29 @@ export function setupRepositoryTest(repositoryMethods: string[] = ['create', 'sa
     mockRepository,
   };
 }
+
+/**
+ * Creates common test data objects to reduce duplication
+ */
+export function createTestLesson(overrides: any = {}) {
+  return {
+    userId: "user123",
+    lessonId: "lesson123",
+    language: "en",
+    progress: 50,
+    ...overrides,
+  };
+}
+
+export function createTestPointer(overrides: any = {}) {
+  return {
+    id: 1,
+    userId: "user123",
+    sessionId: "session123",
+    language: "en",
+    points: "10",
+    milestone: "milestone1",
+    createdAt: new Date(),
+    ...overrides,
+  };
+}

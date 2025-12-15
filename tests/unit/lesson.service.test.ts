@@ -5,6 +5,7 @@ import {
   setupRepositoryTest,
   expectServiceCallbackSuccess,
   expectServiceCallbackError,
+  createTestLesson,
 } from "../helpers/test-utils";
 
 // Mock the data source
@@ -31,12 +32,7 @@ describe("lessonSqlService", () => {
 
   describe("addLessonSql", () => {
     it("should successfully add a lesson", async () => {
-      const lesson = {
-        userId: "user123",
-        lessonId: "lesson123",
-        language: "en",
-        progress: 50,
-      };
+      const lesson = createTestLesson();
 
       const createdLesson = { id: 1, ...lesson };
       mockRepository.create.mockReturnValue(createdLesson);
@@ -50,12 +46,7 @@ describe("lessonSqlService", () => {
     });
 
     it("should handle errors when adding lesson", async () => {
-      const lesson = {
-        userId: "user123",
-        lessonId: "lesson123",
-        language: "en",
-        progress: 50,
-      };
+      const lesson = createTestLesson();
 
       const error = new Error("Database error");
       mockRepository.create.mockReturnValue(lesson);
@@ -71,16 +62,7 @@ describe("lessonSqlService", () => {
     it("should return lesson progress when data exists", async () => {
       const userID = "user123";
       const language = "en";
-      const mockResult = [
-        {
-          id: 1,
-          userId: "user123",
-          lessonId: "lesson123",
-          language: "en",
-          progress: 75,
-          createdAt: new Date(),
-        },
-      ];
+      const mockResult = [createTestLesson({ id: 1, progress: 75, createdAt: new Date() })];
 
       mockRepository.find.mockResolvedValue(mockResult);
 

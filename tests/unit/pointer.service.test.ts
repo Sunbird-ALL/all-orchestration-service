@@ -1,7 +1,7 @@
 import pointerSqlService from "../../src/sql_module/module/pointer_Module/pointerScrvice";
 import { myDataSource } from "../../src/sql_module/config/data.config";
 import { Point } from "../../src/sql_module/schema/point";
-import { setupRepositoryTest } from "../helpers/test-utils";
+import { setupRepositoryTest, createTestPointer } from "../helpers/test-utils";
 
 // Mock the data source
 jest.mock("../../src/sql_module/config/data.config", () => ({
@@ -27,15 +27,7 @@ describe("pointerSqlService", () => {
 
   describe("addPointer", () => {
     it("should successfully add a pointer and calculate totals", async () => {
-      const points: Point = {
-        id: 1,
-        userId: "user123",
-        sessionId: "session123",
-        language: "en",
-        points: "10",
-        milestone: "milestone1",
-        createdAt: new Date(),
-      };
+      const points: Point = createTestPointer();
 
       const savedPoint = { ...points };
       mockRepository.create.mockReturnValue(savedPoint);
@@ -74,15 +66,7 @@ describe("pointerSqlService", () => {
     });
 
     it("should handle zero points correctly", async () => {
-      const points: Point = {
-        id: 1,
-        userId: "user123",
-        sessionId: "session123",
-        language: "en",
-        points: "0",
-        milestone: "milestone1",
-        createdAt: new Date(),
-      };
+      const points: Point = createTestPointer({ points: "0" });
 
       const savedPoint = { ...points };
       mockRepository.create.mockReturnValue(savedPoint);
@@ -100,15 +84,7 @@ describe("pointerSqlService", () => {
     });
 
     it("should handle errors when adding pointer", async () => {
-      const points: Point = {
-        id: 1,
-        userId: "user123",
-        sessionId: "session123",
-        language: "en",
-        points: "10",
-        milestone: "milestone1",
-        createdAt: new Date(),
-      };
+      const points: Point = createTestPointer();
 
       const error = new Error("Database error");
       mockRepository.create.mockReturnValue(points);
