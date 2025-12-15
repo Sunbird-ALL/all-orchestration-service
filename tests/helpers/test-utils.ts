@@ -154,6 +154,61 @@ export function getMulterMockCallback(): MulterCallback {
 }
 
 /**
+ * Creates a complete multer mock for jest.mock() usage
+ * This provides a consistent multer mock implementation across all test files
+ * 
+ * @param options - Configuration options for the multer mock
+ * @returns A mock implementation for jest.mock('multer')
+ * 
+ * @example
+ * jest.mock('multer', () => createMulterMock());
+ */
+export function createMulterMock(options: {
+  syncCallback?: boolean;
+  validateCallback?: boolean;
+} = {}) {
+  const { syncCallback = true, validateCallback = true } = options;
+
+  const getMockMulterCallback = () =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (global as any).__mockMulterCallback ||
+    ((req: any, res: any, cb: (err: any) => void) => {
+      cb(null);
+    });
+
+  const mockMulter = jest.fn(() => ({
+    single: jest.fn((fieldName: string) => {
+      return (req: any, res: any, callback: (err: any) => void) => {
+        const cb = getMockMulterCallback();
+        
+        if (validateCallback && typeof callback !== "function") {
+          throw new TypeError("Callback is not a function");
+        }
+        
+        try {
+          if (syncCallback) {
+            cb(req, res, callback);
+          } else {
+            // For async testing scenarios
+            setImmediate(() => cb(req, res, callback));
+          }
+        } catch (err) {
+          callback(err instanceof Error ? err : new TypeError(String(err)));
+        }
+      };
+    }),
+  }));
+  
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (mockMulter as any).memoryStorage = jest.fn(() => ({}));
+  
+  return {
+    __esModule: true,
+    default: mockMulter,
+  };
+}
+
+/**
  * Creates a mock workbook for XLSX testing
  */
 export function createMockWorkbook(sheetData: unknown[] = []): {
@@ -252,23 +307,11 @@ export function createMockTokenSetup() {
 }
 
 /**
- * Sets up multer callback (internal helper)
- */
-function setupMulterCallback(callback?: MulterCallback): void {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (global as any).__mockMulterCallback =
-    callback ||
-    ((req: unknown, res: unknown, cb: (err: Error | null) => void) => {
-      cb(null);
-    });
-}
-
-/**
  * Resets all mocks and clears test state
  */
 export function resetTestMocks(): void {
   jest.clearAllMocks();
-  setupMulterCallback();
+  setupMulterMock();
 }
 
 /**

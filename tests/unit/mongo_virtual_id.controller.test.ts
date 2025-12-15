@@ -35,48 +35,10 @@ jest.mock("xlsx", () => ({
   write: jest.fn(),
 }));
 
-// Mock multer
-jest.mock("multer", () => {
-  const getMockMulterCallback = () =>
-    (global as any).__mockMulterCallback ||
-    ((req: any, res: any, cb: (err: any) => void) => {
-      // Default callback: call with no error synchronously
-      // Multer calls the callback synchronously, so we do the same
-      // The file should already be set on req.file by the test
-      cb(null);
-    });
-
-  const mockMulter = jest.fn(() => ({
-    single: jest.fn((fieldName: string) => {
-      return (req: any, res: any, callback: (err: any) => void) => {
-        // Get callback dynamically each time middleware is called
-        const cb = getMockMulterCallback();
-        // Ensure callback is a function before calling
-        if (typeof callback !== "function") {
-          throw new Error("Callback is not a function");
-        }
-        try {
-          // Call the mock callback which will invoke the controller's async callback
-          // The mock callback signature is (req, res, cb) => cb(err)
-          // So we pass the controller's callback as the third argument
-          // Multer calls callbacks synchronously, so we do the same
-          cb(req, res, callback);
-          // Note: The controller's callback is async, so it returns a promise
-          // The async operations will execute, but we don't await them here
-          // Tests use waitForAsync() to wait for completion
-        } catch (err) {
-          // If callback throws synchronously, catch it and call the error callback
-          callback(err instanceof Error ? err : new Error(String(err)));
-        }
-      };
-    }),
-  }));
-  (mockMulter as any).memoryStorage = jest.fn(() => ({}));
-  return {
-    __esModule: true,
-    default: mockMulter,
-  };
-});
+// Mock multer using shared factory to eliminate duplication
+jest.mock("multer", () =>
+  require("../helpers/multer-mock-factory").createMockMulter()
+);
 
 describe("virtualIdController (MongoDB)", () => {
   let mockRequest: Partial<Request>;

@@ -1,31 +1,16 @@
 import { Request, Response } from 'express';
-import { Readable, Transform } from 'stream';
+import { Readable, Transform } from 'node:stream';
 import studentController from '../../src/mongo_module/modules/student/student.controller';
 import studentService from '../../src/mongo_module/modules/student/student.service';
 import HttpException from '../../src/common/http.Exception/http.Exception';
 import HttpResponse from '../../src/common/http.Response/http.Response';
 import multer from 'multer';
+import { setupMulterMock } from '../helpers/test-utils';
 
 jest.mock('../../src/mongo_module/modules/student/student.service');
 
-// Mock multer - use a getter function to access the callback dynamically
-const getMockMulterCallback = () => (global as any).__mockMulterCallback || ((req: any, res: any, cb: (err: any) => void) => cb(null));
-
-jest.mock('multer', () => {
-  const mockMulter = jest.fn(() => ({
-    single: jest.fn(() => {
-      return (req: any, res: any, callback: (err: any) => void) => {
-        const cb = getMockMulterCallback();
-        cb(req, res, callback);
-      };
-    }),
-  }));
-  (mockMulter as any).memoryStorage = jest.fn(() => ({}));
-  return {
-    __esModule: true,
-    default: mockMulter,
-  };
-});
+// Mock multer using shared factory to eliminate duplication
+jest.mock('multer', () => require('../helpers/multer-mock-factory').createSimpleMockMulter());
 
 describe('studentController', () => {
   let mockRequest: Partial<Request>;
@@ -45,10 +30,8 @@ describe('studentController', () => {
     };
     mockNext = jest.fn();
     
-    // Reset multer callback
-    (global as any).__mockMulterCallback = (req: any, res: any, callback: (err: any) => void) => {
-      callback(null);
-    };
+    // Reset multer callback using shared helper
+    setupMulterMock();
     
     jest.clearAllMocks();
   });
