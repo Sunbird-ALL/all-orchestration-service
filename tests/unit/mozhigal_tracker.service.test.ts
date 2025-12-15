@@ -3,8 +3,7 @@ import CrudOperations from "../../src/common/crud";
 import learningLogs from "../../src/mongo_module/models/mozhigalScoreTracker";
 import emisLessonMaster from "../../src/mongo_module/models/emisLessonMaster";
 import {
-  createMockCrudOperations,
-  setupServiceMocks,
+  setupServiceTest,
   expectServiceCallbackError,
   expectServiceCallbackSuccess,
 } from "../helpers/test-utils";
@@ -26,10 +25,10 @@ describe("MozhigalTrackerServices", () => {
   let mockLearningLogsInstance: any;
 
   beforeEach(() => {
-    mockNext = jest.fn();
-    mockLearningLogsInstance = {};
-    mockCrudOperations = createMockCrudOperations();
-    setupServiceMocks(CrudOperations, learningLogs, mockCrudOperations, mockLearningLogsInstance);
+    const mocks = setupServiceTest(CrudOperations, learningLogs, {});
+    mockNext = mocks.mockNext;
+    mockCrudOperations = mocks.mockCrudOperations;
+    mockLearningLogsInstance = mocks.mockInstance;
   });
 
   afterEach(() => {

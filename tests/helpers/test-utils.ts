@@ -6,6 +6,7 @@
 import { Request, Response } from "express";
 import { Readable } from "stream";
 import HttpResponse from "../../src/common/http.Response/http.Response";
+import HttpException from "../../src/common/http.Exception/http.Exception";
 
 /**
  * Creates a mock Express Request object
@@ -434,6 +435,72 @@ export function expectControllerError(
 }
 
 /**
+ * Helper to expect service error with HttpException (common pattern in controllers)
+ */
+export function expectHttpException(
+  statusSpy: jest.Mock,
+  sendSpy: jest.Mock,
+  expectedStatus: number = 400
+): void {
+  expect(statusSpy).toHaveBeenCalledWith(expectedStatus);
+  expect(sendSpy).toHaveBeenCalledWith(expect.any(HttpException));
+}
+
+/**
+ * Setup mock validation schema to return success (no error)
+ */
+export function mockValidationSuccess(validationSchema: any): void {
+  (validationSchema.validate as jest.Mock).mockReturnValue({
+    error: null,
+  });
+}
+
+/**
+ * Setup mock validation schema to return error
+ */
+export function mockValidationError(validationSchema: any, errorMessage: string): void {
+  (validationSchema.validate as jest.Mock).mockReturnValue({
+    error: { message: errorMessage },
+  });
+}
+
+/**
+ * Mock a service method to call callback with success result
+ */
+export function mockServiceSuccess(
+  serviceMock: any,
+  methodName: string,
+  result: any
+): void {
+  (serviceMock[methodName] as jest.Mock).mockImplementation(
+    (...args: any[]) => {
+      const callback = args[args.length - 1];
+      if (typeof callback === 'function') {
+        callback(null, result);
+      }
+    }
+  );
+}
+
+/**
+ * Mock a service method to call callback with error
+ */
+export function mockServiceError(
+  serviceMock: any,
+  methodName: string,
+  errorMessage: string = 'Database error'
+): void {
+  (serviceMock[methodName] as jest.Mock).mockImplementation(
+    (...args: any[]) => {
+      const callback = args[args.length - 1];
+      if (typeof callback === 'function') {
+        callback(new Error(errorMessage), null);
+      }
+    }
+  );
+}
+
+/**
  * Sets up standard controller test environment
  * Returns all necessary mocks for controller testing
  */
@@ -516,5 +583,25 @@ export function setupSimpleControllerTest(options: {
     mockRequest,
     mockResponse,
     mockNext,
+  };
+}
+
+/**
+ * Sets up SQL repository test environment
+ * Common pattern for SQL service tests using TypeORM
+ */
+export function setupRepositoryTest(repositoryMethods: string[] = ['create', 'save', 'find']) {
+  const mockNext = jest.fn();
+  const mockRepository: any = {};
+  
+  repositoryMethods.forEach(method => {
+    mockRepository[method] = jest.fn();
+  });
+  
+  jest.clearAllMocks();
+  
+  return {
+    mockNext,
+    mockRepository,
   };
 }

@@ -13,8 +13,12 @@ import {
   waitForAsync,
   createMockWorkbook,
   expectValidationError,
-  expectServiceError,
   expectSuccessResponse,
+  expectHttpException,
+  mockValidationSuccess,
+  mockValidationError,
+  mockServiceSuccess,
+  mockServiceError,
   resetTestMocks,
 } from "../helpers/test-utils";
 
@@ -60,11 +64,7 @@ describe("virtualIdController (MongoDB)", () => {
   describe("genarateVirtualId", () => {
     it("should return 400 if validation fails", async () => {
       mockRequest.query = {};
-      (genarateVirtualIdValidationSchema.validate as jest.Mock).mockReturnValue(
-        {
-          error: { message: "Username is required" },
-        }
-      );
+      mockValidationError(genarateVirtualIdValidationSchema, "Username is required");
 
       await virtualIdController.genarateVirtualId(
         mockRequest as Request,
@@ -77,18 +77,10 @@ describe("virtualIdController (MongoDB)", () => {
 
     it("should successfully generate virtual ID", async () => {
       mockRequest.query = { username: "testuser" };
-      (genarateVirtualIdValidationSchema.validate as jest.Mock).mockReturnValue(
-        {
-          error: null,
-        }
-      );
+      mockValidationSuccess(genarateVirtualIdValidationSchema);
 
       const mockResult = { token: "encrypted-token-123" };
-      (virtualIdService.generateId as jest.Mock).mockImplementation(
-        (username: string, callback: CallableFunction) => {
-          callback(null, mockResult);
-        }
-      );
+      mockServiceSuccess(virtualIdService, 'generateId', mockResult);
 
       await virtualIdController.genarateVirtualId(
         mockRequest as Request,
@@ -110,18 +102,10 @@ describe("virtualIdController (MongoDB)", () => {
 
     it("should return 400 when service returns error", async () => {
       mockRequest.query = { username: "testuser" };
-      (genarateVirtualIdValidationSchema.validate as jest.Mock).mockReturnValue(
-        {
-          error: null,
-        }
-      );
+      mockValidationSuccess(genarateVirtualIdValidationSchema);
 
       const mockError = new Error("Database error");
-      (virtualIdService.generateId as jest.Mock).mockImplementation(
-        (username: string, callback: CallableFunction) => {
-          callback(mockError, null);
-        }
-      );
+      mockServiceError(virtualIdService, 'generateId', "Database error");
 
       await virtualIdController.genarateVirtualId(
         mockRequest as Request,
@@ -129,8 +113,7 @@ describe("virtualIdController (MongoDB)", () => {
         mockNext
       );
 
-      expectServiceError(statusSpy, sendSpy, 400);
-      expect(sendSpy).toHaveBeenCalledWith(expect.any(HttpException));
+      expectHttpException(statusSpy, sendSpy, 400);
     });
 
     it("should handle exceptions", async () => {
@@ -147,17 +130,14 @@ describe("virtualIdController (MongoDB)", () => {
         mockNext
       );
 
-      expectServiceError(statusSpy, sendSpy, 400);
-      expect(sendSpy).toHaveBeenCalledWith(expect.any(HttpException));
+      expectHttpException(statusSpy, sendSpy, 400);
     });
   });
 
   describe("logout", () => {
     it("should return 400 if validation fails", async () => {
       mockRequest.body = {};
-      (logoutValidationSchema.validate as jest.Mock).mockReturnValue({
-        error: { message: "Token is required" },
-      });
+      mockValidationError(logoutValidationSchema, "Token is required");
 
       await virtualIdController.logout(
         mockRequest as Request,
@@ -170,9 +150,7 @@ describe("virtualIdController (MongoDB)", () => {
 
     it("should successfully logout user", async () => {
       mockRequest.body = { token: "test-token" };
-      (logoutValidationSchema.validate as jest.Mock).mockReturnValue({
-        error: null,
-      });
+      mockValidationSuccess(logoutValidationSchema);
 
       (virtualIdService.logout as jest.Mock).mockResolvedValue({
         success: true,
@@ -191,9 +169,7 @@ describe("virtualIdController (MongoDB)", () => {
 
     it("should return 400 if logout fails", async () => {
       mockRequest.body = { token: "test-token" };
-      (logoutValidationSchema.validate as jest.Mock).mockReturnValue({
-        error: null,
-      });
+      mockValidationSuccess(logoutValidationSchema);
 
       (virtualIdService.logout as jest.Mock).mockResolvedValue({
         success: false,
@@ -205,8 +181,7 @@ describe("virtualIdController (MongoDB)", () => {
         mockNext
       );
 
-      expectServiceError(statusSpy, sendSpy, 400);
-      expect(sendSpy).toHaveBeenCalledWith(expect.any(HttpException));
+      expectHttpException(statusSpy, sendSpy, 400);
     });
 
     it("should handle exceptions", async () => {
@@ -225,8 +200,7 @@ describe("virtualIdController (MongoDB)", () => {
         mockNext
       );
 
-      expectServiceError(statusSpy, sendSpy, 400);
-      expect(sendSpy).toHaveBeenCalledWith(expect.any(HttpException));
+      expectHttpException(statusSpy, sendSpy, 400);
     });
   });
 
@@ -264,8 +238,7 @@ describe("virtualIdController (MongoDB)", () => {
         mockNext
       );
 
-      expectServiceError(statusSpy, sendSpy, 400);
-      expect(sendSpy).toHaveBeenCalledWith(expect.any(HttpException));
+      expectHttpException(statusSpy, sendSpy, 400);
     });
 
     it("should handle exceptions", async () => {
@@ -281,8 +254,7 @@ describe("virtualIdController (MongoDB)", () => {
         mockNext
       );
 
-      expectServiceError(statusSpy, sendSpy, 400);
-      expect(sendSpy).toHaveBeenCalledWith(expect.any(HttpException));
+      expectHttpException(statusSpy, sendSpy, 400);
     });
   });
 

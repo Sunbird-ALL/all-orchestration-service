@@ -1,6 +1,7 @@
 import virtualIdSqlSqlService from '../../src/sql_module/module/virtual_Id_Module/virtual_id.service';
 import { myDataSource } from '../../src/sql_module/config/data.config';
 import { virtualId } from '../../src/sql_module/schema/user';
+import { setupRepositoryTest } from '../helpers/test-utils';
 
 // Mock the data source and repository
 jest.mock('../../src/sql_module/config/data.config', () => ({
@@ -16,20 +17,11 @@ describe('virtualIdSqlSqlService', () => {
   let mockSave: jest.Mock;
 
   beforeEach(() => {
-    // Reset all mocks
-    jest.clearAllMocks();
-
-    // Setup repository mocks
-    mockFindOne = jest.fn();
-    mockCreate = jest.fn();
-    mockSave = jest.fn();
-
-    mockRepository = {
-      findOne: mockFindOne,
-      create: mockCreate,
-      save: mockSave,
-    };
-
+    const mocks = setupRepositoryTest(['findOne', 'create', 'save']);
+    mockRepository = mocks.mockRepository;
+    mockFindOne = mockRepository.findOne;
+    mockCreate = mockRepository.create;
+    mockSave = mockRepository.save;
     (myDataSource.getRepository as jest.Mock).mockReturnValue(mockRepository);
   });
 

@@ -1,6 +1,7 @@
 import pointerServices from "../../src/mongo_module/modules/point/point.services";
 import CrudOperations from "../../src/common/crud";
 import Pointer from "../../src/mongo_module/models/pointer";
+import { setupServiceTest } from "../helpers/test-utils";
 
 // Mock CrudOperations
 jest.mock("../../src/common/crud");
@@ -15,22 +16,12 @@ describe("pointerServices", () => {
   let mockPointerInstance: any;
 
   beforeEach(() => {
-    mockNext = jest.fn();
-    mockPointerInstance = {
+    const mocks = setupServiceTest(CrudOperations, Pointer, {
       toObject: jest.fn().mockReturnValue({}),
-    };
-
-    mockCrudOperations = {
-      save: jest.fn(),
-      getAllDocuments: jest.fn(),
-    } as any;
-
-    (CrudOperations as jest.MockedClass<typeof CrudOperations>).mockImplementation(
-      () => mockCrudOperations
-    );
-    (Pointer as jest.MockedClass<typeof Pointer>).mockImplementation(
-      () => mockPointerInstance
-    );
+    });
+    mockNext = mocks.mockNext;
+    mockCrudOperations = mocks.mockCrudOperations as any;
+    mockPointerInstance = mocks.mockInstance;
   });
 
   afterEach(() => {

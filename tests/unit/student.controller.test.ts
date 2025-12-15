@@ -5,7 +5,7 @@ import studentService from '../../src/mongo_module/modules/student/student.servi
 import HttpException from '../../src/common/http.Exception/http.Exception';
 import HttpResponse from '../../src/common/http.Response/http.Response';
 import multer from 'multer';
-import { setupMulterMock } from '../helpers/test-utils';
+import { setupSimpleControllerTest, setupMulterMock } from '../helpers/test-utils';
 
 jest.mock('../../src/mongo_module/modules/student/student.service');
 
@@ -18,22 +18,13 @@ describe('studentController', () => {
   let mockNext: jest.Mock;
 
   beforeEach(() => {
-    mockRequest = {
-      body: {},
-      params: {},
-      query: {},
-      file: undefined,
-    };
-    mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn().mockReturnThis(),
-    };
-    mockNext = jest.fn();
+    const mocks = setupSimpleControllerTest();
+    mockRequest = mocks.mockRequest;
+    mockResponse = mocks.mockResponse;
+    mockNext = mocks.mockNext;
     
     // Reset multer callback using shared helper
     setupMulterMock();
-    
-    jest.clearAllMocks();
   });
 
   describe('uploadStudents', () => {

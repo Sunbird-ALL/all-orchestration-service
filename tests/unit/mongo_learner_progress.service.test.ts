@@ -1,6 +1,7 @@
 import LearnerProgressServices from "../../src/mongo_module/modules/learner_progress/learner_progress.services";
 import CrudOperations from "../../src/common/crud";
 import LearnerProgress from "../../src/mongo_module/models/learnerProgress";
+import { setupServiceTest } from "../helpers/test-utils";
 
 // Mock CrudOperations
 jest.mock("../../src/common/crud");
@@ -15,20 +16,10 @@ describe("LearnerProgressServices", () => {
   let mockLearnerProgressInstance: any;
 
   beforeEach(() => {
-    mockNext = jest.fn();
-    mockLearnerProgressInstance = {};
-
-    mockCrudOperations = {
-      save: jest.fn(),
-      getAllDocuments: jest.fn(),
-    } as any;
-
-    (CrudOperations as jest.MockedClass<typeof CrudOperations>).mockImplementation(
-      () => mockCrudOperations
-    );
-    (LearnerProgress as jest.MockedClass<typeof LearnerProgress>).mockImplementation(
-      () => mockLearnerProgressInstance
-    );
+    const mocks = setupServiceTest(CrudOperations, LearnerProgress, {});
+    mockNext = mocks.mockNext;
+    mockCrudOperations = mocks.mockCrudOperations as any;
+    mockLearnerProgressInstance = mocks.mockInstance;
   });
 
   afterEach(() => {

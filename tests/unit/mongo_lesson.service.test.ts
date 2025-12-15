@@ -1,6 +1,7 @@
 import lessonServices from "../../src/mongo_module/modules/lesson/lesson.services";
 import CrudOperations from "../../src/common/crud";
 import Lesson from "../../src/mongo_module/models/lesson";
+import { setupServiceTest } from "../helpers/test-utils";
 
 // Mock CrudOperations
 jest.mock("../../src/common/crud");
@@ -15,20 +16,10 @@ describe("lessonServices", () => {
   let mockLessonInstance: any;
 
   beforeEach(() => {
-    mockNext = jest.fn();
-    mockLessonInstance = {};
-
-    mockCrudOperations = {
-      save: jest.fn(),
-      getAllDocuments: jest.fn(),
-    } as any;
-
-    (CrudOperations as jest.MockedClass<typeof CrudOperations>).mockImplementation(
-      () => mockCrudOperations
-    );
-    (Lesson as jest.MockedClass<typeof Lesson>).mockImplementation(
-      () => mockLessonInstance
-    );
+    const mocks = setupServiceTest(CrudOperations, Lesson, {});
+    mockNext = mocks.mockNext;
+    mockCrudOperations = mocks.mockCrudOperations as any;
+    mockLessonInstance = mocks.mockInstance;
   });
 
   afterEach(() => {

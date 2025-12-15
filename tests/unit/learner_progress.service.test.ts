@@ -1,6 +1,7 @@
 import learnerProgressService from "../../src/sql_module/module/learner_progress_Module/learner_progress.service";
 import { myDataSource } from "../../src/sql_module/config/data.config";
 import { learner_progress } from "../../src/sql_module/schema/learnerProgress";
+import { setupRepositoryTest } from "../helpers/test-utils";
 
 // Mock the data source
 jest.mock("../../src/sql_module/config/data.config", () => ({
@@ -14,15 +15,9 @@ describe("learnerProgressService", () => {
   let mockNext: jest.Mock;
 
   beforeEach(() => {
-    mockNext = jest.fn();
-    mockRepository = {
-      create: jest.fn(),
-      save: jest.fn(),
-      findOne: jest.fn(),
-      find: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    };
+    const mocks = setupRepositoryTest(['create', 'save', 'findOne', 'find', 'update', 'delete']);
+    mockNext = mocks.mockNext;
+    mockRepository = mocks.mockRepository;
     (myDataSource.getRepository as jest.Mock).mockReturnValue(mockRepository);
   });
 

@@ -2,7 +2,7 @@ import lessonSqlService from "../../src/sql_module/module/lesson_Module/lessonSe
 import { myDataSource } from "../../src/sql_module/config/data.config";
 import { Lesson } from "../../src/sql_module/schema/lesson";
 import {
-  createMockNext,
+  setupRepositoryTest,
   expectServiceCallbackSuccess,
   expectServiceCallbackError,
 } from "../helpers/test-utils";
@@ -19,12 +19,9 @@ describe("lessonSqlService", () => {
   let mockNext: jest.Mock;
 
   beforeEach(() => {
-    mockNext = createMockNext();
-    mockRepository = {
-      create: jest.fn(),
-      save: jest.fn(),
-      find: jest.fn(),
-    };
+    const mocks = setupRepositoryTest(['create', 'save', 'find']);
+    mockNext = mocks.mockNext;
+    mockRepository = mocks.mockRepository;
     (myDataSource.getRepository as jest.Mock).mockReturnValue(mockRepository);
   });
 

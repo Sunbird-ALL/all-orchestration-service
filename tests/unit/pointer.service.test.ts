@@ -1,6 +1,7 @@
 import pointerSqlService from "../../src/sql_module/module/pointer_Module/pointerScrvice";
 import { myDataSource } from "../../src/sql_module/config/data.config";
 import { Point } from "../../src/sql_module/schema/point";
+import { setupRepositoryTest } from "../helpers/test-utils";
 
 // Mock the data source
 jest.mock("../../src/sql_module/config/data.config", () => ({
@@ -14,12 +15,9 @@ describe("pointerSqlService", () => {
   let mockNext: jest.Mock;
 
   beforeEach(() => {
-    mockNext = jest.fn();
-    mockRepository = {
-      create: jest.fn(),
-      save: jest.fn(),
-      find: jest.fn(),
-    };
+    const mocks = setupRepositoryTest(['create', 'save', 'find']);
+    mockNext = mocks.mockNext;
+    mockRepository = mocks.mockRepository;
     (myDataSource.getRepository as jest.Mock).mockReturnValue(mockRepository);
   });
 

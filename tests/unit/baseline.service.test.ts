@@ -2,8 +2,7 @@ import BaselineService from "../../src/mongo_module/modules/baseline_assessment/
 import CrudOperations from "../../src/common/crud";
 import BaselineAssessment from "../../src/mongo_module/models/baseline_assess";
 import {
-  createMockCrudOperations,
-  setupServiceMocks,
+  setupServiceTest,
   expectServiceCallbackError,
   expectServiceCallbackSuccess,
 } from "../helpers/test-utils";
@@ -21,12 +20,12 @@ describe("BaselineService", () => {
   let mockBaselineInstance: any;
 
   beforeEach(() => {
-    mockNext = jest.fn();
-    mockBaselineInstance = {
+    const mocks = setupServiceTest(CrudOperations, BaselineAssessment, {
       toObject: jest.fn().mockReturnValue({}),
-    };
-    mockCrudOperations = createMockCrudOperations();
-    setupServiceMocks(CrudOperations, BaselineAssessment, mockCrudOperations, mockBaselineInstance);
+    });
+    mockNext = mocks.mockNext;
+    mockCrudOperations = mocks.mockCrudOperations;
+    mockBaselineInstance = mocks.mockInstance;
   });
 
   afterEach(() => {

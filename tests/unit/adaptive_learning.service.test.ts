@@ -2,8 +2,7 @@ import AdaptiveLearningServices from "../../src/mongo_module/modules/adaptiveLea
 import CrudOperations from "../../src/common/crud";
 import adaptiveLearning from "../../src/mongo_module/models/adaptiveLearning";
 import {
-  createMockCrudOperations,
-  setupServiceMocks,
+  setupServiceTest,
   expectServiceCallbackError,
   expectServiceCallbackSuccess,
 } from "../helpers/test-utils";
@@ -21,10 +20,10 @@ describe("AdaptiveLearningServices", () => {
   let mockAdaptiveLearningInstance: any;
 
   beforeEach(() => {
-    mockNext = jest.fn();
-    mockAdaptiveLearningInstance = {};
-    mockCrudOperations = createMockCrudOperations();
-    setupServiceMocks(CrudOperations, adaptiveLearning, mockCrudOperations, mockAdaptiveLearningInstance);
+    const mocks = setupServiceTest(CrudOperations, adaptiveLearning, {});
+    mockNext = mocks.mockNext;
+    mockCrudOperations = mocks.mockCrudOperations;
+    mockAdaptiveLearningInstance = mocks.mockInstance;
   });
 
   afterEach(() => {
