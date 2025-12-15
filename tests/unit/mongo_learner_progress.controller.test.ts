@@ -3,7 +3,7 @@ import LearnerProgressController from '../../src/mongo_module/modules/learner_pr
 import learnerProgressServices from '../../src/mongo_module/modules/learner_progress/learner_progress.services';
 import HttpException from '../../src/common/http.Exception/http.Exception';
 import HttpResponse from '../../src/common/http.Response/http.Response';
-import { setupSimpleControllerTest } from '../helpers/test-utils';
+import { setupSimpleControllerTest, mockServiceSuccess, mockServiceError } from '../helpers/test-utils';
 
 jest.mock('../../src/mongo_module/modules/learner_progress/learner_progress.services');
 
@@ -40,11 +40,7 @@ describe('LearnerProgressController (MongoDB)', () => {
         milestoneLevel: 'level1' 
       };
 
-      (learnerProgressServices.createLearnerProgress as jest.Mock).mockImplementation(
-        (data: any, callback: CallableFunction) => {
-          callback(null, { id: '123', ...data });
-        }
-      );
+      mockServiceSuccess(learnerProgressServices, 'createLearnerProgress', { id: '123', ...mockRequest.body });
 
       await LearnerProgressController.createLearnerProgress(
         mockRequest as Request,
@@ -67,11 +63,7 @@ describe('LearnerProgressController (MongoDB)', () => {
         milestoneLevel: 'level1' 
       };
 
-      (learnerProgressServices.createLearnerProgress as jest.Mock).mockImplementation(
-        (data: any, callback: CallableFunction) => {
-          callback(new Error('Database error'), null);
-        }
-      );
+      mockServiceError(learnerProgressServices, 'createLearnerProgress', 'Database error');
 
       await LearnerProgressController.createLearnerProgress(
         mockRequest as Request,

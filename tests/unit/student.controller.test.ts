@@ -5,7 +5,12 @@ import studentService from '../../src/mongo_module/modules/student/student.servi
 import HttpException from '../../src/common/http.Exception/http.Exception';
 import HttpResponse from '../../src/common/http.Response/http.Response';
 import multer from 'multer';
-import { setupSimpleControllerTest, setupMulterMock } from '../helpers/test-utils';
+import { 
+  setupSimpleControllerTest, 
+  setupMulterMock,
+  mockServiceSuccess,
+  mockServiceError
+} from '../helpers/test-utils';
 
 jest.mock('../../src/mongo_module/modules/student/student.service');
 
@@ -62,11 +67,7 @@ describe('studentController', () => {
       mockRequest.query = { type: 'single' };
       mockRequest.body = { username: '12345678901' };
 
-      (studentService.create as jest.Mock).mockImplementation(
-        (username: string, callback: CallableFunction) => {
-          callback(null, { username, id: '123' });
-        }
-      );
+      mockServiceSuccess(studentService, 'create', { username: '12345678901', id: '123' });
 
       await studentController.uploadStudents(
         mockRequest as Request,
@@ -92,11 +93,7 @@ describe('studentController', () => {
     it('should successfully create student', async () => {
       mockRequest.body = { username: '12345678901' };
 
-      (studentService.create as jest.Mock).mockImplementation(
-        (username: string, callback: CallableFunction) => {
-          callback(null, { username, id: '123' });
-        }
-      );
+      mockServiceSuccess(studentService, 'create', { username: '12345678901', id: '123' });
 
       await studentController.handleSingleUpload(
         mockRequest as Request,
@@ -110,11 +107,7 @@ describe('studentController', () => {
     it('should return 400 on service error', async () => {
       mockRequest.body = { username: '12345678901' };
 
-      (studentService.create as jest.Mock).mockImplementation(
-        (username: string, callback: CallableFunction) => {
-          callback(new Error('Database error'), null);
-        }
-      );
+      mockServiceError(studentService, 'create', 'Database error');
 
       await studentController.handleSingleUpload(
         mockRequest as Request,
@@ -141,17 +134,8 @@ describe('studentController', () => {
     it('should register new teacher user if starts with GT', async () => {
       mockRequest.body = { username: 'GT123' };
 
-      (studentService.findUser as jest.Mock).mockImplementation(
-        (username: string, callback: CallableFunction) => {
-          callback(null, null);
-        }
-      );
-
-      (studentService.create as jest.Mock).mockImplementation(
-        (username: string, callback: CallableFunction) => {
-          callback(null, { username, id: '123' });
-        }
-      );
+      mockServiceSuccess(studentService, 'findUser', null);
+      mockServiceSuccess(studentService, 'create', { username: 'GT123', id: '123' });
 
       await studentController.login(
         mockRequest as Request,
@@ -166,11 +150,7 @@ describe('studentController', () => {
     it('should login existing teacher user', async () => {
       mockRequest.body = { username: 'GT123' };
 
-      (studentService.findUser as jest.Mock).mockImplementation(
-        (username: string, callback: CallableFunction) => {
-          callback(null, { username, id: '123' });
-        }
-      );
+      mockServiceSuccess(studentService, 'findUser', { username: 'GT123', id: '123' });
 
       await studentController.login(
         mockRequest as Request,
@@ -184,11 +164,7 @@ describe('studentController', () => {
     it('should return 401 for non-teacher user not found', async () => {
       mockRequest.body = { username: '12345678901' };
 
-      (studentService.findUser as jest.Mock).mockImplementation(
-        (username: string, callback: CallableFunction) => {
-          callback(null, null);
-        }
-      );
+      mockServiceSuccess(studentService, 'findUser', null);
 
       await studentController.login(
         mockRequest as Request,
@@ -202,11 +178,7 @@ describe('studentController', () => {
     it('should login existing non-teacher user', async () => {
       mockRequest.body = { username: '12345678901' };
 
-      (studentService.findUser as jest.Mock).mockImplementation(
-        (username: string, callback: CallableFunction) => {
-          callback(null, { username, id: '123' });
-        }
-      );
+      mockServiceSuccess(studentService, 'findUser', { username: '12345678901', id: '123' });
 
       await studentController.login(
         mockRequest as Request,
@@ -220,11 +192,7 @@ describe('studentController', () => {
     it('should return 400 on service error', async () => {
       mockRequest.body = { username: '12345678901' };
 
-      (studentService.findUser as jest.Mock).mockImplementation(
-        (username: string, callback: CallableFunction) => {
-          callback(new Error('Database error'), null);
-        }
-      );
+      mockServiceError(studentService, 'findUser', 'Database error');
 
       await studentController.login(
         mockRequest as Request,
@@ -254,17 +222,8 @@ describe('studentController', () => {
     it('should handle teacher creation error', async () => {
       mockRequest.body = { username: 'GT123' };
 
-      (studentService.findUser as jest.Mock).mockImplementation(
-        (username: string, callback: CallableFunction) => {
-          callback(null, null);
-        }
-      );
-
-      (studentService.create as jest.Mock).mockImplementation(
-        (username: string, callback: CallableFunction) => {
-          callback(new Error('Database error'), null);
-        }
-      );
+      mockServiceSuccess(studentService, 'findUser', null);
+      mockServiceError(studentService, 'create', 'Database error');
 
       await studentController.login(
         mockRequest as Request,
@@ -278,11 +237,7 @@ describe('studentController', () => {
     it('should handle teacher findUser error', async () => {
       mockRequest.body = { username: 'GT123' };
 
-      (studentService.findUser as jest.Mock).mockImplementation(
-        (username: string, callback: CallableFunction) => {
-          callback(new Error('Database error'), null);
-        }
-      );
+      mockServiceError(studentService, 'findUser', 'Database error');
 
       await studentController.login(
         mockRequest as Request,
@@ -468,11 +423,7 @@ describe('studentController', () => {
         error: null,
       });
 
-      (studentService.create as jest.Mock).mockImplementation(
-        (username: string, callback: CallableFunction) => {
-          callback(new Error('Database error'), null);
-        }
-      );
+      mockServiceError(studentService, 'create', 'Database error');
 
       await studentController.handleBulkUpload(
         mockRequest as Request,

@@ -3,7 +3,7 @@ import MozhigalTrackerController from '../../src/mongo_module/modules/mozhigal_t
 import MozhigalTrackerServices from '../../src/mongo_module/modules/mozhigal_tracker/mozhigal_tracker.service';
 import HttpException from '../../src/common/http.Exception/http.Exception';
 import HttpResponse from '../../src/common/http.Response/http.Response';
-import { setupSimpleControllerTest } from '../helpers/test-utils';
+import { setupSimpleControllerTest, mockServiceSuccess, mockServiceError } from '../helpers/test-utils';
 
 jest.mock('../../src/mongo_module/modules/mozhigal_tracker/mozhigal_tracker.service');
 
@@ -37,11 +37,7 @@ describe('MozhigalTrackerController', () => {
       mockRequest.body = { score: 100 };
       mockRequest.params = { lessonId: '456' };
 
-      (MozhigalTrackerServices.addLearningLogs as jest.Mock).mockImplementation(
-        (data: any, lessonId: string, studentId: string, callback: CallableFunction) => {
-          callback(null, { id: '123', score: 100 });
-        }
-      );
+      mockServiceSuccess(MozhigalTrackerServices, 'addLearningLogs', { id: '123', score: 100 });
 
       await MozhigalTrackerController.addLearningLogs(
         mockRequest as Request,
@@ -64,11 +60,7 @@ describe('MozhigalTrackerController', () => {
       mockRequest.body = { score: 0 };
       mockRequest.params = { lessonId: '456' };
 
-      (MozhigalTrackerServices.addLearningLogs as jest.Mock).mockImplementation(
-        (data: any, lessonId: string, studentId: string, callback: CallableFunction) => {
-          callback(null, { id: '123', score: 0 });
-        }
-      );
+      mockServiceSuccess(MozhigalTrackerServices, 'addLearningLogs', { id: '123', score: 0 });
 
       await MozhigalTrackerController.addLearningLogs(
         mockRequest as Request,
@@ -91,11 +83,7 @@ describe('MozhigalTrackerController', () => {
       mockRequest.body = { score: 85 };
       mockRequest.params = { lessonId: '456' };
 
-      (MozhigalTrackerServices.addLearningLogs as jest.Mock).mockImplementation(
-        (data: any, lessonId: string, studentId: string, callback: CallableFunction) => {
-          callback(null, { id: '123', ...data });
-        }
-      );
+      mockServiceSuccess(MozhigalTrackerServices, 'addLearningLogs', { id: '123', ...mockRequest.body });
 
       await MozhigalTrackerController.addLearningLogs(
         mockRequest as Request,
@@ -108,11 +96,7 @@ describe('MozhigalTrackerController', () => {
 
       expect(mockResponse.status).toHaveBeenCalledWith(200);
 
-      (MozhigalTrackerServices.addLearningLogs as jest.Mock).mockImplementation(
-        (data: any, lessonId: string, studentId: string, callback: CallableFunction) => {
-          callback(null, { id: '123', ...data });
-        }
-      );
+      mockServiceSuccess(MozhigalTrackerServices, 'addLearningLogs', { id: '123', ...mockRequest.body });
 
       await MozhigalTrackerController.addLearningLogs(
         mockRequest as Request,
@@ -127,11 +111,7 @@ describe('MozhigalTrackerController', () => {
       mockRequest.body = { score: 85 };
       mockRequest.params = { lessonId: '456' };
 
-      (MozhigalTrackerServices.addLearningLogs as jest.Mock).mockImplementation(
-        (data: any, lessonId: string, studentId: string, callback: CallableFunction) => {
-          callback(new Error('Database error'), null);
-        }
-      );
+      mockServiceError(MozhigalTrackerServices, 'addLearningLogs', 'Database error');
 
       await MozhigalTrackerController.addLearningLogs(
         mockRequest as Request,
@@ -157,11 +137,7 @@ describe('MozhigalTrackerController', () => {
     });
 
     it('should return cumulative score', async () => {
-      (MozhigalTrackerServices.getCumulativeScore as jest.Mock).mockImplementation(
-        (studentId: string, callback: CallableFunction) => {
-          callback(null, { cumulativeScore: 450 });
-        }
-      );
+      mockServiceSuccess(MozhigalTrackerServices, 'getCumulativeScore', { cumulativeScore: 450 });
 
       await MozhigalTrackerController.getCumulativeScore(
         mockRequest as Request,
@@ -177,11 +153,7 @@ describe('MozhigalTrackerController', () => {
     });
 
     it('should return 400 on service error', async () => {
-      (MozhigalTrackerServices.getCumulativeScore as jest.Mock).mockImplementation(
-        (studentId: string, callback: CallableFunction) => {
-          callback(new Error('Not found'), null);
-        }
-      );
+      mockServiceError(MozhigalTrackerServices, 'getCumulativeScore', 'Not found');
 
       await MozhigalTrackerController.getCumulativeScore(
         mockRequest as Request,
@@ -207,11 +179,7 @@ describe('MozhigalTrackerController', () => {
     });
 
     it('should return lesson-wise scores', async () => {
-      (MozhigalTrackerServices.getLessonWiseScore as jest.Mock).mockImplementation(
-        (studentId: string, callback: CallableFunction) => {
-          callback(null, [{ lessonId: '1', score: 85 }, { lessonId: '2', score: 90 }]);
-        }
-      );
+      mockServiceSuccess(MozhigalTrackerServices, 'getLessonWiseScore', [{ lessonId: '1', score: 85 }, { lessonId: '2', score: 90 }]);
 
       await MozhigalTrackerController.getLessonWiseScore(
         mockRequest as Request,
@@ -227,11 +195,7 @@ describe('MozhigalTrackerController', () => {
     });
 
     it('should return 400 on service error', async () => {
-      (MozhigalTrackerServices.getLessonWiseScore as jest.Mock).mockImplementation(
-        (studentId: string, callback: CallableFunction) => {
-          callback(new Error('Not found'), null);
-        }
-      );
+      mockServiceError(MozhigalTrackerServices, 'getLessonWiseScore', 'Not found');
 
       await MozhigalTrackerController.getLessonWiseScore(
         mockRequest as Request,

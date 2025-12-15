@@ -3,7 +3,7 @@ import virtualIdSqlController from '../../src/sql_module/module/virtual_Id_Modul
 import virtualIdSqlSqlService from '../../src/sql_module/module/virtual_Id_Module/virtual_id.service';
 import HttpException from '../../src/common/http.Exception/http.Exception';
 import HttpResponse from '../../src/common/http.Response/http.Response';
-import { setupSimpleControllerTest } from '../helpers/test-utils';
+import { setupSimpleControllerTest, mockServiceSuccess, mockServiceError } from '../helpers/test-utils';
 
 // Mock the service
 jest.mock('../../src/sql_module/module/virtual_Id_Module/virtual_id.service');
@@ -87,11 +87,7 @@ describe('virtualIdSqlController', () => {
         
         mockRequest.query = { username: mockUsername };
         
-        (virtualIdSqlSqlService.genarateId as jest.Mock).mockImplementation(
-          (username: string, callback: CallableFunction) => {
-            callback(null, mockResult);
-          }
-        );
+        mockServiceSuccess(virtualIdSqlSqlService, 'genarateId', mockResult);
 
         await virtualIdSqlController.genarateVirtualId(
           mockRequest as Request,
@@ -121,11 +117,7 @@ describe('virtualIdSqlController', () => {
         
         mockRequest.query = { username: mockUsername };
         
-        (virtualIdSqlSqlService.genarateId as jest.Mock).mockImplementation(
-          (username: string, callback: CallableFunction) => {
-            callback(null, mockResult);
-          }
-        );
+        mockServiceSuccess(virtualIdSqlSqlService, 'genarateId', mockResult);
 
         await virtualIdSqlController.genarateVirtualId(
           mockRequest as Request,
@@ -144,11 +136,7 @@ describe('virtualIdSqlController', () => {
         
         mockRequest.query = { username: mockUsername };
         
-        (virtualIdSqlSqlService.genarateId as jest.Mock).mockImplementation(
-          (username: string, callback: CallableFunction) => {
-            callback(null, mockResult);
-          }
-        );
+        mockServiceSuccess(virtualIdSqlSqlService, 'genarateId', mockResult);
 
         await virtualIdSqlController.genarateVirtualId(
           mockRequest as Request,
@@ -169,11 +157,7 @@ describe('virtualIdSqlController', () => {
         
         mockRequest.query = { username: mockUsername };
         
-        (virtualIdSqlSqlService.genarateId as jest.Mock).mockImplementation(
-          (username: string, callback: CallableFunction) => {
-            callback(null, mockResult);
-          }
-        );
+        mockServiceSuccess(virtualIdSqlSqlService, 'genarateId', mockResult);
 
         await virtualIdSqlController.genarateVirtualId(
           mockRequest as Request,
@@ -192,11 +176,7 @@ describe('virtualIdSqlController', () => {
         
         mockRequest.query = { username: mockUsername };
         
-        (virtualIdSqlSqlService.genarateId as jest.Mock).mockImplementation(
-          (username: string, callback: CallableFunction) => {
-            callback(mockError, null);
-          }
-        );
+        mockServiceError(virtualIdSqlSqlService, 'genarateId', 'Database connection failed');
 
         await virtualIdSqlController.genarateVirtualId(
           mockRequest as Request,
@@ -219,11 +199,7 @@ describe('virtualIdSqlController', () => {
         
         mockRequest.query = { username: mockUsername };
         
-        (virtualIdSqlSqlService.genarateId as jest.Mock).mockImplementation(
-          (username: string, callback: CallableFunction) => {
-            callback(mockError, null);
-          }
-        );
+        mockServiceError(virtualIdSqlSqlService, 'genarateId', 'Token generation failed');
 
         await virtualIdSqlController.genarateVirtualId(
           mockRequest as Request,
@@ -273,11 +249,7 @@ describe('virtualIdSqlController', () => {
         
         mockRequest.query = { username: mockUsername };
         
-        (virtualIdSqlSqlService.genarateId as jest.Mock).mockImplementation(
-          (username: string, callback: CallableFunction) => {
-            callback(null, mockResult);
-          }
-        );
+        mockServiceSuccess(virtualIdSqlSqlService, 'genarateId', mockResult);
 
         await virtualIdSqlController.genarateVirtualId(
           mockRequest as Request,
