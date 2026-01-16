@@ -20,7 +20,6 @@ class virtualIdService {
             if (existingUser && existingUser.virtualId) {
                 virtualID = existingUser.virtualId;
             } else {
-                // Generate a unique virtual_id that doesn't exist in the database
                 virtualID = await generateUniqueVirtualID();
             }
 
@@ -177,7 +176,7 @@ function generateRandomID() {
     return Math.floor(1000000000 + Math.random() * 9000000000);
 }
 
-// function to generate unique virtual_id that doesn't exist in database
+// function to generate unique virtual_id
 async function generateUniqueVirtualID(): Promise<number> {
     let virtualID: number;
     do {
