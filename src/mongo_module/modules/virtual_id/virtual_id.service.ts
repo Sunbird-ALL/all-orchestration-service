@@ -96,37 +96,59 @@ class virtualIdService {
     }
 
     static async logout(token: string): Promise<{ success: boolean; message?: string }> {
+        console.log("logout service: start");
         try {
+            console.log("logout service: line 1");
             if (!token) {
+                console.log("logout service: line 2 - token missing");
                 throw new HttpException(400, 'Token is required');
             }
 
+            console.log("logout service: line 3");
             // Step 1: Verify token structure
             const secret_key = process.env.JOSE_SECRET;
+            console.log("logout service: line 4, secret_key exists:", !!secret_key);
             if (!secret_key) {
+                console.log("logout service: line 5 - secret_key missing");
                 throw new HttpException(500, 'Server configuration error');
             }
+            console.log("logout service: line 6");
             const hash = createHash('sha256').update(secret_key).digest();
 
             // Step 2: Decrypt and verify token (with expiration tolerance)
             try {
+                console.log("logout service: line 7 - decrypting token");
                 const jwtDecryptedToken = await jose.jwtDecrypt(token, hash);
+                console.log("logout service: line 8 - token decrypted");
                 const jwtSignedToken = String(jwtDecryptedToken.payload.jwtSignedToken);
+                console.log("logout service: line 9");
 
                 const jwtSigninKey = new TextEncoder().encode(process.env.JWT_SIGNIN_PRIVATE_KEY);
+                console.log("logout service: line 10 - verifying token");
                 const verifiedToken = await jose.jwtVerify(jwtSignedToken, jwtSigninKey, {
                     clockTolerance: 300 // 5 minutes tolerance for clock skew
                 });
+                console.log("logout service: line 11 - token verified");
 
+                console.log("logout service: line 12");
                 const virtualID = verifiedToken.payload.virtual_id;
+                console.log("logout service: line 13, virtualID:", virtualID, "type:", typeof virtualID);
+                console.log("logout service: line 14 - querying database");
                 const user = await virtualId.findOne({
                   virtualId: virtualID,
-                });
+                }).maxTimeMS(5000);
+                console.log("logout service: line 15, user found:", !!user);
+                console.log("logout service: line 16, user virtualId:", user?.virtualId);
+                console.log("logout service: line 17, user token matches:", user?.token === token);
 
                 if (!user || user.token !== token) {
+                    console.log("logout service: line 18 - user not found or token mismatch");
+                    console.log("logout service: user exists:", !!user);
+                    console.log("logout service: token matches:", user?.token === token);
                     throw new HttpException(404, 'User not found');
                 }
 
+                console.log("logout service: line 19 - updating database");
                 // Step 3: Update DB: set isLoggedIn = false,
                 await virtualId.updateOne(
                     { virtualId: virtualID },
@@ -135,16 +157,21 @@ class virtualIdService {
                             token: null,
                         }
                     }
-                );
+                ).maxTimeMS(5000);
+                console.log("logout service: line 20 - update completed");
                 return { success: true, message: 'Logout successful' };
             } catch (error) {
+                console.log("logout service: inner catch, error:", error);
                 if (error instanceof jose.errors.JWTExpired) {
+                    console.log("logout service: JWT expired");
                     return { success: true, message: 'Token was already expired' };
                 }
 
                 if (error instanceof jose.errors.JOSEError) {
+                    console.log("logout service: JOSE error");
                     throw new HttpException(401, 'Invalid token');
                 }
+                console.log("logout service: rethrowing error");
                 throw error;
             }
         } catch (error) {
@@ -157,10 +184,13 @@ class virtualIdService {
     }
 
     static async tokenStatus(user_id: string) {
+        console.log("tokenStatus service: start");
+        console.log("tokenStatus service: line 1, user_id:", user_id);
         const user = await virtualId.findOne({
             virtualId: Number(user_id),
-        });
-
+        }).maxTimeMS(5000);
+        console.log("tokenStatus service: line 2, user found:", !!user);
+        console.log("tokenStatus service: line 3, returning result");
         return {
             token: user?.token
         };

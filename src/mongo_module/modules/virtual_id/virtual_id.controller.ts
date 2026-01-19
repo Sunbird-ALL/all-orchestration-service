@@ -147,36 +147,53 @@ class virtualIdController {
 
 
     static async logout(request: Request, response: Response, next: CallableFunction) {
+        console.log("logout controller: start");
         try {
+            console.log("logout controller: line 1");
             const { error } = logoutValidationSchema.validate(request.body);
+            console.log("logout controller: line 2, validation error:", error);
             if (error) {
+                console.log("logout controller: line 3 - validation failed");
                 return response.status(400).send(new HttpResponse(null, null, 'Token is required', null));
             }
 
+            console.log("logout controller: line 4");
             const token = request.body.token;
+            console.log("logout controller: line 5, token:", token ? "exists" : "missing");
             const result = await virtualIdService.logout(token);
+            console.log("logout controller: line 6, result:", result);
 
             if (result?.success) {
+                console.log("logout controller: line 7 - returning 200");
                 return response.status(200).send(new HttpResponse(null, null, 'Logged out successfully', null));
             } else {
+                console.log("logout controller: line 8 - returning 400");
                 return response.status(400).send(new HttpException(400, ""));
             }
         } catch (err) {
+            console.log("logout controller: error caught", err);
             return response.status(400).send(new HttpException(400, 'Something went wrong'));
         }
     }
 
     // Internally calling
     static async tokenStatus(request: Request, response: Response, next: CallableFunction) {
+        console.log("tokenStatus controller: start");
         try { 
+            console.log("tokenStatus controller: line 1");
             const user_id = request.body.user_id;
+            console.log("tokenStatus controller: line 2, user_id:", user_id);
             const result = await virtualIdService.tokenStatus(user_id);
+            console.log("tokenStatus controller: line 3, result:", result);
             if (result) {
+                console.log("tokenStatus controller: line 4 - returning 200");
                 return response.status(200).send(new HttpResponse(null, result, "user status return", null));
             } else {
+                console.log("tokenStatus controller: line 5 - returning 400");
                 return response.status(400).send(new HttpException(400, ""));
             }
         } catch (err) {
+            console.log("tokenStatus controller: error caught", err);
             return response.status(400).send(new HttpException(400, 'Something went wrong'));
         }
     }
