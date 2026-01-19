@@ -16,13 +16,7 @@ class virtualIdService {
             const existingUser = await virtualId.findOne({ userName: lowercaseUsername });
             const token_exp_time = process.env.JWT_EXPIRATION || '1h'
 
-            // Ensure virtualID is always a number (handle type inconsistencies)
-            let virtualID: number;
-            if (existingUser && existingUser.virtualId) {
-                virtualID = Number(existingUser.virtualId);
-            } else {
-                virtualID = generateRandomID();
-            }
+            let virtualID = existingUser ? existingUser.virtualId : generateRandomID();
             console.log("virtualId----", virtualID);
 
             // **Step 1: Sign the JWT Token**
@@ -41,7 +35,7 @@ class virtualIdService {
 
             if (existingUser) {
               await virtualId.updateOne(
-                { userName: lowercaseUsername },
+                { virtualId: virtualID },
                 {
                   $set: {
                     token: jwtEncryptedToken,
@@ -124,17 +118,13 @@ class virtualIdService {
                     clockTolerance: 300 // 5 minutes tolerance for clock skew
                 });
 
-                const virtualID = Number(verifiedToken.payload.virtual_id);
+                const virtualID = verifiedToken.payload.virtual_id;
                 const user = await virtualId.findOne({
                   virtualId: virtualID,
                 });
 
-                if (!user) {
+                if (!user || user.token !== token) {
                     throw new HttpException(404, 'User not found');
-                }
-
-                if (user.token !== token) {
-                    throw new HttpException(401, 'Token mismatch - invalid token');
                 }
 
                 // Step 3: Update DB: set isLoggedIn = false,
