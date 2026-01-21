@@ -8,6 +8,8 @@ virtualIRouter.post("/logout", virtualIdController.logout);
 
 virtualIRouter.post("/tokenStatus", virtualIdController.tokenStatus);
 
+virtualIRouter.delete("/deleteByUserName", virtualIdController.deleteByUserName);
+
 // New route for processing Excel files with tokens
 virtualIRouter.post("/processExcelTokens", virtualIdController.processExcelTokens);
 
