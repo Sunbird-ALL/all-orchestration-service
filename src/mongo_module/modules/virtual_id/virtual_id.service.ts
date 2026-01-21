@@ -168,6 +168,28 @@ class virtualIdService {
             token: user?.token
         };
     }
+
+    static async deleteByUserName(username: string): Promise<{ success: boolean; message?: string }> {
+        try {
+            const lowercaseUsername = username.trim().toLowerCase();
+            
+            const existingUser = await virtualId.findOne({ userName: lowercaseUsername }).maxTimeMS(5000);
+            
+            if (!existingUser) {
+                return { success: false, message: 'User not found' };
+            }
+
+            const deleteResult = await virtualId.deleteOne({ userName: lowercaseUsername }).maxTimeMS(5000);
+            
+            if (deleteResult.deletedCount > 0) {
+                return { success: true, message: 'User deleted successfully' };
+            } else {
+                return { success: false, message: 'Failed to delete user' };
+            }
+        } catch (error: any) {
+            throw new Error(error?.message || 'Failed to delete user');
+        }
+    }
 }
 export default virtualIdService;
 
