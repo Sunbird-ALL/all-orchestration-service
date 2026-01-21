@@ -6,6 +6,7 @@ const learnerai_virtual_id = new mongoose.Schema({
     userName : {
         type: String,
         required: true,
+        unique: true,
         index: true
     },
     virtualId: {
