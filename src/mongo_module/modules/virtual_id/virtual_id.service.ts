@@ -169,17 +169,21 @@ class virtualIdService {
         };
     }
 
-    static async deleteByUserName(username: string): Promise<{ success: boolean; message?: string }> {
+    static async deleteByVirtualId(virtual_id: string | number): Promise<{ success: boolean; message?: string }> {
         try {
-            const lowercaseUsername = username.trim().toLowerCase();
+            const virtualIdNumber = Number(virtual_id);
             
-            const existingUser = await virtualId.findOne({ userName: lowercaseUsername }).maxTimeMS(5000);
+            if (isNaN(virtualIdNumber)) {
+                return { success: false, message: 'Invalid virtual_id: must be a number' };
+            }
+            
+            const existingUser = await virtualId.findOne({ virtualId: virtualIdNumber }).maxTimeMS(5000);
             
             if (!existingUser) {
                 return { success: false, message: 'User not found' };
             }
 
-            const deleteResult = await virtualId.deleteOne({ userName: lowercaseUsername }).maxTimeMS(5000);
+            const deleteResult = await virtualId.deleteOne({ virtualId: virtualIdNumber }).maxTimeMS(5000);
             
             if (deleteResult.deletedCount > 0) {
                 return { success: true, message: 'User deleted successfully' };
