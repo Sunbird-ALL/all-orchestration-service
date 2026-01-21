@@ -181,15 +181,15 @@ class virtualIdController {
         }
     }
 
-    static async deleteByUserName(request: Request, response: Response, next: CallableFunction) {
+    static async deleteByVirtualId(request: Request, response: Response, next: CallableFunction) {
         try {
-            const username = request.query.username || request.body.username;
+            const virtual_id = request.query.virtual_id || request.body.virtual_id;
             
-            if (!username) {
-                return response.status(400).send(new HttpResponse(null, null, "Username is required", null));
+            if (!virtual_id) {
+                return response.status(400).send(new HttpResponse(null, null, "virtual_id is required", null));
             }
 
-            const result = await virtualIdService.deleteByUserName(username);
+            const result = await virtualIdService.deleteByVirtualId(virtual_id);
             
             if (result.success) {
                 return response.status(200).send(new HttpResponse(null, result, "User deleted successfully", null));
