@@ -16,7 +16,12 @@ class virtualIdService {
             const existingUser = await virtualId.findOne({ userName: lowercaseUsername });
             const token_exp_time = process.env.JWT_EXPIRATION || '1h'
 
-            let virtualID = existingUser ? existingUser.virtualId : generateRandomID();
+            let virtualID: number;
+            if (existingUser && existingUser.virtualId) {
+                virtualID = existingUser.virtualId;
+            } else {
+                virtualID = await generateUniqueVirtualID();
+            }
 
             // **Step 1: Sign the JWT Token**
             const jwtSigninKey = new TextEncoder().encode(process.env.JWT_SIGNIN_PRIVATE_KEY);
@@ -34,7 +39,7 @@ class virtualIdService {
 
             if (existingUser) {
               await virtualId.updateOne(
-                { virtualId: virtualID },
+                { userName: lowercaseUsername },
                 {
                   $set: {
                     token: jwtEncryptedToken,
@@ -169,5 +174,14 @@ export default virtualIdService;
 // function for generate random_id
 function generateRandomID() {
     return Math.floor(1000000000 + Math.random() * 9000000000);
+}
+
+// function to generate unique virtual_id
+async function generateUniqueVirtualID(): Promise<number> {
+    let virtualID: number;
+    do {
+        virtualID = generateRandomID();
+    } while (await virtualId.findOne({ virtualId: virtualID }));
+    return virtualID;
 }
 
