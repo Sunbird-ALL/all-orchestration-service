@@ -180,5 +180,25 @@ class virtualIdController {
             return response.status(400).send(new HttpException(400, 'Something went wrong'));
         }
     }
+
+    static async deleteByVirtualId(request: Request, response: Response, next: CallableFunction) {
+        try {
+            const virtual_id = request.query.virtual_id || request.body.virtual_id;
+            
+            if (!virtual_id) {
+                return response.status(400).send(new HttpResponse(null, null, "virtual_id is required", null));
+            }
+
+            const result = await virtualIdService.deleteByVirtualId(virtual_id);
+            
+            if (result.success) {
+                return response.status(200).send(new HttpResponse(null, result, "User deleted successfully", null));
+            } else {
+                return response.status(404).send(new HttpException(404, result.message || "User not found"));
+            }
+        } catch (err: any) {
+            return response.status(400).send(new HttpException(400, err?.message || 'Something went wrong'));
+        }
+    }
 }
 export default virtualIdController;

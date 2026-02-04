@@ -18,6 +18,10 @@ const learnerai_lesson_tracking = new mongoose.Schema({
         type: String,
         required: false,
     },
+    subMilestoneLevel: {
+         type: String,
+        required: false,
+    },
     language: {
         type: String,
         required: true,
