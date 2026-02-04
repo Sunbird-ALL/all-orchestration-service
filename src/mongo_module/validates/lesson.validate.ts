@@ -8,7 +8,7 @@ const language = Joi.string()
     .required();
 const milestone = Joi.string().trim().required().empty();
 const milestoneLevel = Joi.string().trim().required().empty();
-const subMilestoneLevel = Joi.string().trim().required().empty();
+const subMilestoneLevel = Joi.string().trim().optional().empty();
 const lesson = Joi.required().empty();
 const progress = Joi.number().min(0).max(100).required()
 
