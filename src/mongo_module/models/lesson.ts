@@ -34,6 +34,14 @@ const learnerai_lesson_tracking = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    duration: {
+        type: Number,
+        required: false,
+    },
+    applyLevel: {
+        type: String,
+        required: false,
+    },
     createdAt: {
         type: Date,
         default: Date.now

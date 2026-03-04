@@ -11,6 +11,8 @@ const milestoneLevel = Joi.string().trim().required().empty();
 const subMilestoneLevel = Joi.string().trim().optional().empty();
 const lesson = Joi.required().empty();
 const progress = Joi.number().min(0).max(100).required()
+const duration = Joi.number().min(0).max(10000).optional()
+const applyLevel = Joi.string().trim().optional().empty();
 
 const addLessonValidationSchema = Joi.object({
     userId: userId,
@@ -21,6 +23,8 @@ const addLessonValidationSchema = Joi.object({
     subMilestoneLevel:subMilestoneLevel,
     lesson:lesson,
     progress:progress,
+    duration: duration,
+    applyLevel: applyLevel
 });
 
 const getLessonProgressValidationSchema = Joi.object({
