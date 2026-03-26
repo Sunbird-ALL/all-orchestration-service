@@ -1,28 +1,29 @@
 import { Router } from "express";
+import { asyncRoute } from "../../../common/middleware/api-error.middleware";
 import learnerProgressSqlController from "./learner_progress.controller";
 
 const learnerProgressSqlRouter = Router();
 
-learnerProgressSqlRouter.post("/createLearnerProgress", learnerProgressSqlController.addLearnerProgress);
+learnerProgressSqlRouter.post("/createLearnerProgress", asyncRoute(learnerProgressSqlController.addLearnerProgress));
 
-learnerProgressSqlRouter.get("/latestLearnerProgress/:id", learnerProgressSqlController.getLatestLearnerProgressById);
+learnerProgressSqlRouter.get("/latestLearnerProgress/:id", asyncRoute(learnerProgressSqlController.getLatestLearnerProgressById));
 
-learnerProgressSqlRouter.get("/learnerProgressById/:id", learnerProgressSqlController.getLearnerProgressById);
+learnerProgressSqlRouter.get("/learnerProgressById/:id", asyncRoute(learnerProgressSqlController.getLearnerProgressById));
 
-learnerProgressSqlRouter.get("/learnerProgressByuserId/:id", learnerProgressSqlController.getLearnerProgressByuserId);
+learnerProgressSqlRouter.get("/learnerProgressByuserId/:id", asyncRoute(learnerProgressSqlController.getLearnerProgressByuserId));
 
-learnerProgressSqlRouter.get("/learnerProgressBysessionId/:id", learnerProgressSqlController.getLearnerProgressBysessionId);
+learnerProgressSqlRouter.get("/learnerProgressBysessionId/:id", asyncRoute(learnerProgressSqlController.getLearnerProgressBysessionId));
 
-learnerProgressSqlRouter.get("/learnerProgressBysubsessionId/:id", learnerProgressSqlController.getLearnerProgressBysubsessionId);
+learnerProgressSqlRouter.get("/learnerProgressBysubsessionId/:id", asyncRoute(learnerProgressSqlController.getLearnerProgressBysubsessionId));
 
-learnerProgressSqlRouter.put("/learnerProgressById/:id", learnerProgressSqlController.updateLearnerProgressById);
+learnerProgressSqlRouter.put("/learnerProgressById/:id", asyncRoute(learnerProgressSqlController.updateLearnerProgressById));
 
-learnerProgressSqlRouter.put("/learnerProgressBysubsessionId/:id", learnerProgressSqlController.updateLearnerProgressBysubsessionId);
+learnerProgressSqlRouter.put("/learnerProgressBysubsessionId/:id", asyncRoute(learnerProgressSqlController.updateLearnerProgressBysubsessionId));
 
-learnerProgressSqlRouter.delete("/learnerProgressById/:id", learnerProgressSqlController.deleteLearnerProgressById);
+learnerProgressSqlRouter.delete("/learnerProgressById/:id", asyncRoute(learnerProgressSqlController.deleteLearnerProgressById));
 
-learnerProgressSqlRouter.delete("/learnerProgressByuserId/:id", learnerProgressSqlController.deleteLearnerProgressByuserId);
+learnerProgressSqlRouter.delete("/learnerProgressByuserId/:id", asyncRoute(learnerProgressSqlController.deleteLearnerProgressByuserId));
 
-learnerProgressSqlRouter.delete("/learnerProgressBysubsessionId/:id", learnerProgressSqlController.deleteLearnerProgressBysubsessionId);
+learnerProgressSqlRouter.delete("/learnerProgressBysubsessionId/:id", asyncRoute(learnerProgressSqlController.deleteLearnerProgressBysubsessionId));
 
 export default learnerProgressSqlRouter;

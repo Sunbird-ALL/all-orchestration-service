@@ -3,54 +3,49 @@ import { addLessonValidationSchema, getLessonProgressValidationSchema } from '..
 import lessonServices from "./lesson.services";
 import HttpException from "../../../common/http.Exception/http.Exception";
 import HttpResponse from "../../../common/http.Response/http.Response";
+import { toHttpException } from "../../../common/middleware/api-error.middleware";
 
 class lessonController {
 
-    static async addLesson(request: Request, response: Response, next: CallableFunction) {
+    static async addLesson(request: Request, response: Response, next: NextFunction) {
         try {
-            const userID = response.locals.virtual_id.toString();  
+            const userID = response.locals.virtual_id.toString();
             const lesson = request.body;
             lesson.userId = userID;
 
             const { error } = addLessonValidationSchema.validate(request.body);
-            if(error){
-                response.status(400).send(new HttpResponse(null, null,"Required fields are missing", null));
+            if (error) {
+                return next(HttpException.fromJoi(error));
             }
-            else{
-                lessonServices.addLesson(lesson, (err: any, result: any) => {
-                    if (err) {
-                        response.status(400).send(new HttpException(400, "Something went wrong"));
-                    } else {
-                        response.status(200).send(new HttpResponse(null, result, "Lesson added", null));
-                    }
-                });
-            }            
+            lessonServices.addLesson(lesson, (err: any, result: any) => {
+                if (err) {
+                    return next(new HttpException(400, "Something went wrong", { code: 'LESSON_ADD_FAILED' }));
+                }
+                response.status(200).send(new HttpResponse(null, result, "Lesson added", null));
+            });
         }
         catch (err) {
-            response.status(400).send(new HttpException(400, "Something went wrong"));
+            next(toHttpException(err));
         }
     }
 
     static async getLessonProgress(request: Request, response: Response, next: NextFunction) {
         try {
-            const userID = response.locals.virtual_id;  
+            const userID = response.locals.virtual_id;
             const language = request.query.language;
 
-            const { error } = getLessonProgressValidationSchema.validate({userId:userID, ...request.query});
+            const { error } = getLessonProgressValidationSchema.validate({ userId: userID, ...request.query });
             if (error) {
-                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
+                return next(HttpException.fromJoi(error));
             }
-            else {
-                lessonServices.getLessonProgress(userID,language,(err: any, result: any) => {
-                    if (err) {
-                        response.status(400).send(new HttpException(400, "Something went wrong"));
-                    } else {
-                        response.status(200).send(new HttpResponse("GetLessonProgress", result, "Total Lesson Progress Returned", null));
-                    }
-                });
-            }
+            lessonServices.getLessonProgress(userID, language, (err: any, result: any) => {
+                if (err) {
+                    return next(new HttpException(400, "Something went wrong", { code: 'LESSON_PROGRESS_FAILED' }));
+                }
+                response.status(200).send(new HttpResponse("GetLessonProgress", result, "Total Lesson Progress Returned", null));
+            });
         } catch (err) {
-            response.status(400).send(new HttpException(400, "Something went wrong"));
+            next(toHttpException(err));
         }
     }
 }

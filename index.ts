@@ -8,6 +8,13 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './src/swagger/swagger.config';
 import sqlRouter, { sqlDatabaseConnection } from './src/sql_module';
 import mongoDbRouter, { mongodbConnection } from './src/mongo_module/modules';
+import HttpException from './src/common/http.Exception/http.Exception';
+import {
+  globalErrorHandler,
+  handleErrorForResponse,
+  notFoundHandler,
+  requestIdMiddleware,
+} from './src/common/middleware/api-error.middleware';
 dotenv.config();
 
 const numCPUs = os.cpus().length;
@@ -34,19 +41,24 @@ if (cluster.isPrimary) {
     const dataBaseType: string = process.env.DATABASE_TYPE || '';
     const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
 
+    app.use(requestIdMiddleware);
+
     // Increase request size limit
     app.use(express.json({ limit: '5mb' }));
     app.use(express.urlencoded({ limit: '5mb', extended: true }));
 
-    // Restrcit the improper json format
-    app.use((err: any, req: any, res: any, next: () => void) => {
+    app.use((err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
       if (err instanceof SyntaxError && 'body' in err) {
-        return res.status(400).json(
-          {
-            message: 'Invalid JSON format in request body'
-          });
+        return handleErrorForResponse(
+          res,
+          req,
+          new HttpException(400, 'Invalid JSON format in request body', {
+            errorType: 'BadRequest',
+            code: 'INVALID_JSON',
+          }),
+        );
       }
-      next();
+      next(err);
     });
 
     // Cors aalowd for the specific url
@@ -80,12 +92,17 @@ if (cluster.isPrimary) {
       res.send(swaggerSpec);
     });
 
-    if (dataBaseType.toLowerCase() === 'mysql') {
-      sqlDatabaseConnection();
-      app.use('/api', sqlRouter);
-    } else {
-      mongodbConnection();
-      app.use('/api', mongoDbRouter);
+    try {
+      if (dataBaseType.toLowerCase() === 'mysql') {
+        await sqlDatabaseConnection();
+        app.use('/api', sqlRouter);
+      } else {
+        await mongodbConnection();
+        app.use('/api', mongoDbRouter);
+      }
+    } catch (dbError) {
+      console.error('Database startup failed. Shutting down worker.', dbError);
+      throw dbError;
     }
 
     // App testing
@@ -95,6 +112,9 @@ if (cluster.isPrimary) {
         message: 'App is working',
       });
     });
+
+    app.use(notFoundHandler);
+    app.use(globalErrorHandler);
 
     app.listen(PORT, HOST, () => {
       console.log(`Worker ${process.pid} is running on port ${PORT}`);

@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { genarateVirtualIdValidationSchema } from '../../validates/virtual_id.validate';
 import HttpException from "../../../common/http.Exception/http.Exception";
 import HttpResponse from "../../../common/http.Response/http.Response";
@@ -6,12 +6,12 @@ import virtualIdService from "./virtual_id.service";
 import { logoutValidationSchema } from "../../validates/logoutValidation";
 import * as XLSX from 'xlsx';
 import multer from 'multer';
+import { toHttpException } from "../../../common/middleware/api-error.middleware";
 
-// Configure multer for file upload
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB limit
+        fileSize: 10 * 1024 * 1024,
     },
     fileFilter: (req, file, cb) => {
         if (file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
@@ -25,61 +25,53 @@ const upload = multer({
 
 class virtualIdController {
 
-    static async genarateVirtualId(request: Request, response: Response, next: CallableFunction) {
+    static async genarateVirtualId(request: Request, response: Response, next: NextFunction) {
         try {
             const username = request.query.username;
 
             const { error } = genarateVirtualIdValidationSchema.validate({ ...request.query });
             if (error) {
-                response.status(400).send(new HttpResponse(null, null, "Required fields are missing", null));
-            } else {
-                virtualIdService.generateId(username, (err: any, result: any) => {
-                    if (err) {
-                        response.status(400).send(new HttpException(400, "Something went wrong"));
-                    } else {
-                        response.status(200).send(new HttpResponse(null, result, "Token generated", null));
-                    }
-                });
+                return next(HttpException.fromJoi(error));
             }
+            virtualIdService.generateId(username, (err: any, result: any) => {
+                if (err) {
+                    return next(new HttpException(400, "Something went wrong", { code: 'VIRTUAL_ID_GENERATE_FAILED' }));
+                }
+                response.status(200).send(new HttpResponse(null, result, "Token generated", null));
+            });
         }
         catch (err) {
-            response.status(400).send(new HttpException(400, "Something went wrong"));
+            next(toHttpException(err));
         }
     }
 
-    // New API to process Excel file with tokens
-    static async processExcelTokens(request: Request, response: Response, next: CallableFunction) {
+    static async processExcelTokens(request: Request, response: Response, next: NextFunction) {
         try {
-            // Use multer middleware to handle file upload
             upload.single('excelFile')(request, response, async (err) => {
                 if (err) {
-                    return response.status(400).send(new HttpException(400, err.message));
+                    return next(new HttpException(400, err.message, { code: 'EXCEL_UPLOAD_ERROR' }));
                 }
 
                 if (!request.file) {
-                    return response.status(400).send(new HttpException(400, "No Excel file uploaded"));
+                    return next(new HttpException(400, "No Excel file uploaded", { code: 'EXCEL_MISSING' }));
                 }
 
                 try {
-                    // Read the Excel file
                     const workbook = XLSX.read(request.file.buffer, { type: 'buffer' });
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
-                    
-                    // Convert to JSON
+
                     const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                    
+
                     if (jsonData.length === 0) {
-                        return response.status(400).send(new HttpException(400, "Excel file is empty"));
+                        return next(new HttpException(400, "Excel file is empty", { code: 'EXCEL_EMPTY' }));
                     }
 
-                    // Check if virtualId column exists
                     const firstRow = jsonData[0] as any;
                     if (!firstRow.virtualId) {
-                        return response.status(400).send(new HttpException(400, "Column 'virtualId' not found in Excel file"));
+                        return next(new HttpException(400, "Column 'virtualId' not found in Excel file", { code: 'EXCEL_COLUMN_MISSING' }));
                     }
 
-                    // Process each row
                     const processedData = [];
                     const errors = [];
 
@@ -96,9 +88,8 @@ class virtualIdController {
                         }
 
                         try {
-                            // Decode the token
                             const decodedResult = await virtualIdService.decodeToken(token);
-                            
+
                             if (decodedResult.success) {
                                 processedData.push({
                                     ...row,
@@ -118,39 +109,35 @@ class virtualIdController {
                         }
                     }
 
-                    // Create new workbook with processed data
                     const newWorkbook = XLSX.utils.book_new();
                     const newWorksheet = XLSX.utils.json_to_sheet(processedData);
                     XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, "Processed Data");
 
-                    // Convert to buffer
                     const excelBuffer = XLSX.write(newWorkbook, { type: 'buffer', bookType: 'xlsx' });
 
-                    // Set response headers for file download
                     response.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
                     response.setHeader('Content-Disposition', 'attachment; filename="processed_tokens.xlsx"');
                     response.setHeader('Content-Length', excelBuffer.length);
 
-                    // Send the processed Excel file
                     response.status(200).send(excelBuffer);
 
                 } catch (processError: any) {
-                    console.error('Excel processing error:', processError);
-                    response.status(500).send(new HttpException(500, "Error processing Excel file"));
+                    next(new HttpException(500, "Error processing Excel file", {
+                        errorType: 'InternalServerError',
+                        code: 'EXCEL_PROCESS_FAILED',
+                    }));
                 }
             });
         } catch (err) {
-            response.status(500).send(new HttpException(500, "Something went wrong"));
+            next(toHttpException(err));
         }
     }
 
-
-
-    static async logout(request: Request, response: Response, next: CallableFunction) {
+    static async logout(request: Request, response: Response, next: NextFunction) {
         try {
             const { error } = logoutValidationSchema.validate(request.body);
             if (error) {
-                return response.status(400).send(new HttpResponse(null, null, 'Token is required', null));
+                return next(HttpException.fromJoi(error));
             }
 
             const token = request.body.token;
@@ -158,46 +145,45 @@ class virtualIdController {
 
             if (result?.success) {
                 return response.status(200).send(new HttpResponse(null, null, 'Logged out successfully', null));
-            } else {
-                return response.status(400).send(new HttpException(400, ""));
             }
+            return next(new HttpException(400, 'Logout failed', { code: 'LOGOUT_FAILED' }));
         } catch (err) {
-            return response.status(400).send(new HttpException(400, 'Something went wrong'));
+            next(toHttpException(err));
         }
     }
 
-    // Internally calling
-    static async tokenStatus(request: Request, response: Response, next: CallableFunction) {
-        try { 
+    static async tokenStatus(request: Request, response: Response, next: NextFunction) {
+        try {
             const user_id = request.body.user_id;
             const result = await virtualIdService.tokenStatus(user_id);
             if (result) {
                 return response.status(200).send(new HttpResponse(null, result, "user status return", null));
-            } else {
-                return response.status(400).send(new HttpException(400, ""));
             }
+            return next(new HttpException(400, 'Unable to load token status', { code: 'TOKEN_STATUS_FAILED' }));
         } catch (err) {
-            return response.status(400).send(new HttpException(400, 'Something went wrong'));
+            next(toHttpException(err));
         }
     }
 
-    static async deleteByVirtualId(request: Request, response: Response, next: CallableFunction) {
+    static async deleteByVirtualId(request: Request, response: Response, next: NextFunction) {
         try {
             const virtual_id = request.query.virtual_id || request.body.virtual_id;
-            
+
             if (!virtual_id) {
-                return response.status(400).send(new HttpResponse(null, null, "virtual_id is required", null));
+                return next(new HttpException(400, "virtual_id is required", {
+                    errorType: 'ValidationError',
+                    code: 'MISSING_VIRTUAL_ID',
+                }));
             }
 
             const result = await virtualIdService.deleteByVirtualId(virtual_id);
-            
+
             if (result.success) {
                 return response.status(200).send(new HttpResponse(null, result, "User deleted successfully", null));
-            } else {
-                return response.status(404).send(new HttpException(404, result.message || "User not found"));
             }
+            return next(new HttpException(404, result.message || "User not found", { code: 'USER_NOT_FOUND' }));
         } catch (err: any) {
-            return response.status(400).send(new HttpException(400, err?.message || 'Something went wrong'));
+            next(toHttpException(err));
         }
     }
 }

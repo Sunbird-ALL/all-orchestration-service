@@ -16,15 +16,14 @@ sqlRouter.use("/virtualId", virtualIdSqlRouter);
 sqlRouter.use("/learnerProgress", learnerProgressSqlRouter);
 
 // Sql DataBase connection
-export function sqlDatabaseConnection() {
-  myDataSource
-    .initialize()
-    .then(() => {
-      console.log("\n*************SQL DB connected**************\n")
-    })
-    .catch((err) => {
-      console.error("Error in SQL DB connection", err)
-    })
+export async function sqlDatabaseConnection(): Promise<void> {
+  try {
+    await myDataSource.initialize();
+    console.log("\n*************SQL DB connected**************\n");
+  } catch (err) {
+    console.error("Error in SQL DB connection", err);
+    throw new Error("SQL_CONNECTION_FAILED");
+  }
 }
 
 export default sqlRouter;

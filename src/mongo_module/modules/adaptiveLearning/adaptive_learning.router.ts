@@ -1,16 +1,17 @@
 import { Router } from "express";
+import { asyncRoute } from "../../../common/middleware/api-error.middleware";
 import AdaptiveLearningController from "./adaptive_learning.controller";
 
 
 const adaptiveLearningRouter = Router();
 
-adaptiveLearningRouter.post("/addSchoolUdise", AdaptiveLearningController.addSchoolUdise);
+adaptiveLearningRouter.post("/addSchoolUdise", asyncRoute(AdaptiveLearningController.addSchoolUdise));
 
-adaptiveLearningRouter.get("/validateUdise/:udise_code", AdaptiveLearningController.validateUdise);
+adaptiveLearningRouter.get("/validateUdise/:udise_code", asyncRoute(AdaptiveLearningController.validateUdise));
 
-adaptiveLearningRouter.delete("/deleteByUdise/:udise_code", AdaptiveLearningController.deleteUdise);
+adaptiveLearningRouter.delete("/deleteByUdise/:udise_code", asyncRoute(AdaptiveLearningController.deleteUdise));
 
-adaptiveLearningRouter.get("/getAllUdise", AdaptiveLearningController.getAllUdeise);
+adaptiveLearningRouter.get("/getAllUdise", asyncRoute(AdaptiveLearningController.getAllUdeise));
 
 
 export default adaptiveLearningRouter;

@@ -1,50 +1,48 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import HttpException from "../../../common/http.Exception/http.Exception";
 import HttpResponse from "../../../common/http.Response/http.Response";
 import pointerSqlService from "./pointerScrvice";
+import { toHttpException } from "../../../common/middleware/api-error.middleware";
 
 class pointerController {
 
-    static async addPointer(request: Request, response: Response, next: CallableFunction) {
+    static async addPointer(request: Request, response: Response, next: NextFunction) {
         try {
             const pointer = request.body;
             pointerSqlService.addPointer(pointer, (err: any, result: any) => {
                 if (err) {
-                    response.status(400).send(new HttpException(400, "Something went wrong"));
-                } else {
-                    response.status(200).send(new HttpResponse(null, result, "Pointer added", null));
+                    return next(new HttpException(400, "Something went wrong", { code: 'SQL_POINTER_ADD_FAILED' }));
                 }
+                response.status(200).send(new HttpResponse(null, result, "Pointer added", null));
             });
         }
         catch (err) {
-            response.status(400).send(new HttpException(400, "Something went wrong"));
+            next(toHttpException(err));
         }
     }
 
-    static async getPointersByUserId(request: Request, response: Response, next: CallableFunction) {
+    static async getPointersByUserId(request: Request, response: Response, next: NextFunction) {
         try {
             const userID = request.params.userId;
             const sessionID = request.params.sessionId;
-            const language = request.query.language
+            const language = request.query.language;
             if (userID == "null") {
-                response.status(400).send(new HttpResponse(null, null, "userId is not be null", null));
+                return next(new HttpException(400, "userId must not be null", { code: 'INVALID_USER_ID' }));
             }
-            else if (sessionID == "null") {
-                response.status(400).send(new HttpResponse(null, null, "sessionId is not be null", null));
+            if (sessionID == "null") {
+                return next(new HttpException(400, "sessionId must not be null", { code: 'INVALID_SESSION_ID' }));
             }
-            else if (language == "null") {
-                response.status(400).send(new HttpResponse(null, null, "language is not be null", null));
-            } else {
-                pointerSqlService.getPointersByUserID(userID, sessionID, language, (err: any, result: any) => {
-                    if (err) {
-                        response.status(400).send(new HttpException(400, "Something went wrong"));
-                    } else {
-                        response.status(200).send(new HttpResponse("GetPointer", result, "Total pointer Returned", null));
-                    }
-                });
+            if (language == "null") {
+                return next(new HttpException(400, "language must not be null", { code: 'INVALID_LANGUAGE' }));
             }
+            pointerSqlService.getPointersByUserID(userID, sessionID, language, (err: any, result: any) => {
+                if (err) {
+                    return next(new HttpException(400, "Something went wrong", { code: 'SQL_POINTER_GET_FAILED' }));
+                }
+                response.status(200).send(new HttpResponse("GetPointer", result, "Total pointer Returned", null));
+            });
         } catch (err) {
-            response.status(400).send(new HttpException(400, "Something went wrong"));
+            next(toHttpException(err));
         }
     }
 }

@@ -30,13 +30,15 @@ mongoDbRouter.use("/baselineAssessment", baselineRouter);
 mongoDbRouter.use("/student", studentRouter);
 
 // MongoDb connection
-export function mongodbConnection() {
+export async function mongodbConnection(): Promise<void> {
     mongoose.set('strictQuery', false);
-    mongoose.connect(MONGO_URL).then(() => {
+    try {
+        await mongoose.connect(MONGO_URL);
         console.log("\n*************MONGODB connected**************\n");
-    }).catch(error => {
-        console.log("unable to connect with database:", error);
-    });
+    } catch (error) {
+        console.error("unable to connect with database:", error);
+        throw new Error("MONGODB_CONNECTION_FAILED");
+    }
 }
 
 export default mongoDbRouter;

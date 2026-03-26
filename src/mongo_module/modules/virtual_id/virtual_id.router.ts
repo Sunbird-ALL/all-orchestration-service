@@ -1,16 +1,17 @@
 import { Router } from "express";
+import { asyncRoute } from "../../../common/middleware/api-error.middleware";
 import virtualIdController from "./virtual_id.controller";
 const virtualIRouter = Router();
 
-virtualIRouter.post("/generateVirtualID", virtualIdController.genarateVirtualId);
+virtualIRouter.post("/generateVirtualID", asyncRoute(virtualIdController.genarateVirtualId));
 
-virtualIRouter.post("/logout", virtualIdController.logout);
+virtualIRouter.post("/logout", asyncRoute(virtualIdController.logout));
 
-virtualIRouter.post("/tokenStatus", virtualIdController.tokenStatus);
+virtualIRouter.post("/tokenStatus", asyncRoute(virtualIdController.tokenStatus));
 
-virtualIRouter.delete("/deleteByVirtualId", virtualIdController.deleteByVirtualId);
+virtualIRouter.delete("/deleteByVirtualId", asyncRoute(virtualIdController.deleteByVirtualId));
 
 // New route for processing Excel files with tokens
-virtualIRouter.post("/processExcelTokens", virtualIdController.processExcelTokens);
+virtualIRouter.post("/processExcelTokens", asyncRoute(virtualIdController.processExcelTokens));
 
 export default virtualIRouter;
