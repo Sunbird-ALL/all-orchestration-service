@@ -1,6 +1,7 @@
 import Joi from 'joi';
 
-const userId = Joi.number().integer().required();
+/** Matches JWT `virtual_id` persisted as string on lesson documents */
+const userId = Joi.string().trim().pattern(/^\d+$/).required();
 const sessionId = Joi.string().trim().required().empty();
 const language = Joi.string()
     .trim()
@@ -25,12 +26,12 @@ const addLessonValidationSchema = Joi.object({
     progress:progress,
     duration: duration,
     applyLevel: applyLevel
-});
+}).unknown(false);
 
 const getLessonProgressValidationSchema = Joi.object({
     userId: userId,
     language:language,
-});
+}).unknown(false);
 
 export { addLessonValidationSchema, getLessonProgressValidationSchema };
 
