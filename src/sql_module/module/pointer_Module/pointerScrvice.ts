@@ -21,7 +21,14 @@ class pointerSqlService {
       const totalSessionPointer = pointerSessionData.reduce((total: number, doc: any) => total + parseInt(doc.points) || 0, 0);
       const totalLanguagePoints = languageData.reduce((total: number, doc: any) => total + parseInt(doc.points) || 0, 0);
 
-      const resultObject = { ...result, totalUserPoints: totalUserPointer, totalSessionPoints: totalSessionPointer, totalLanguagePoints: totalLanguagePoints };
+      const resultObject = {
+        ...result,
+        totalUserPoints: totalUserPointer,
+        totalSessionPoints: totalSessionPointer,
+        totalLanguagePoints: totalLanguagePoints,
+      } as Record<string, unknown>;
+      delete resultObject.userId;
+     
       return next(null, resultObject);
     } catch (err: any) {
       return next(err, "Something went wrong!");
@@ -42,11 +49,15 @@ class pointerSqlService {
       const sessionPointers = await pointerRepository.find({ where: { sessionId: sessionID } });
       const totalSessionPoints = sessionPointers.reduce((total: any, pointer: Point) => total + parseInt(pointer.points) || 0, 0);
 
+      const rows = userPointers.map((doc) => {
+        const row = { ...doc } as Record<string, unknown>;
+        delete row.userId;
+        return row;
+      });
       const response = {
         totalUserPoints,
         totalLanguagePoints,
-        totalSessionPoints,
-        result: userPointers,
+        totalSessionPoints
       };
       next(null, response);
     } catch (err) {

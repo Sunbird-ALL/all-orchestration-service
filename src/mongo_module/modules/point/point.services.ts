@@ -29,6 +29,8 @@ class pointerServices {
             result.totalSessionPoints = totalSessionPointer;
             result.totalLanguagePoints = totalLanguagePoints;
 
+            delete result.userId;
+           
             return next(null, result);
         } catch (err: any) {
             return next(err, "Something went wrong!");
@@ -48,12 +50,10 @@ class pointerServices {
                 const totalSessionPoints = sessionData.reduce((total: any, doc: any) => total + (doc.points || 0), 0);
 
                 const response = {
-                    userID,
                     totalUserPoints,
                     totalLanguagePoints,
-                    totalSessionPoints,
-                    result,
-                }
+                    totalSessionPoints
+                };
                 next(null, response);
            
         } catch (err) {

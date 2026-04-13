@@ -31,7 +31,7 @@ class lessonController {
 
     static async getLessonProgress(request: Request, response: Response, next: NextFunction) {
         try {
-            const userID = response.locals.virtual_id;
+            const userID = String(response.locals.virtual_id);
             const language = request.query.language;
 
             const { error } = getLessonProgressValidationSchema.validate({ userId: userID, ...request.query });

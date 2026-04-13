@@ -10,7 +10,9 @@ class lessonServices {
         try {
             const newLesson = new Lesson(lesson);
             const result = await new CrudOperations(Lesson).save(newLesson);
-            return next(null, result);
+            const resultdata = result.toObject();
+            delete resultdata.userId;
+            return next(null, resultdata);
         } catch (err: any) {
             return next(err, "Something went wrong!");
         }
@@ -25,12 +27,12 @@ class lessonServices {
             final = firstResult[0];
 
             if(final){
-                result = final;
+                result = { ...final };
+                delete (result as { userId?: unknown }).userId;
             }else{
                 return next(null, "No data found for this user!");
             }
-            const response = result
-            next(null, response);
+            next(null, result);
         } catch (err) {
             next("Something went wrong");
         }
