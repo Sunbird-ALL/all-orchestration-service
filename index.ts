@@ -9,6 +9,7 @@ import swaggerSpec from './src/swagger/swagger.config';
 import sqlRouter, { sqlDatabaseConnection } from './src/sql_module';
 import mongoDbRouter, { mongodbConnection } from './src/mongo_module/modules';
 import HttpException from './src/common/http.Exception/http.Exception';
+import mongoose from 'mongoose';
 import {
   globalErrorHandler,
   handleErrorForResponse,
@@ -110,6 +111,22 @@ if (cluster.isPrimary) {
       res.status(200).json({
         status: true,
         message: 'App is working',
+      });
+    });
+
+    // Deep health check
+    app.get('/health', (req, res) => {
+      const mongoOk = dataBaseType.toLowerCase() !== 'mysql'
+        ? mongoose.connection.readyState === 1
+        : null;
+      const allOk = mongoOk !== false;
+      res.status(200).json({
+        status: allOk ? 'ok' : 'degraded',
+        services: {
+          ...(mongoOk !== null && { mongodb: mongoOk }),
+        },
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString(),
       });
     });
 
