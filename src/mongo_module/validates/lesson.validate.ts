@@ -26,12 +26,12 @@ const addLessonValidationSchema = Joi.object({
     progress:progress,
     duration: duration,
     applyLevel: applyLevel
-}).unknown(false);
+});
 
 const getLessonProgressValidationSchema = Joi.object({
     userId: userId,
     language:language,
-}).unknown(false);
+});
 
 export { addLessonValidationSchema, getLessonProgressValidationSchema };
 

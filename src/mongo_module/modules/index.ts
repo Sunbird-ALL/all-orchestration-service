@@ -33,7 +33,11 @@ mongoDbRouter.use("/student", studentRouter);
 export async function mongodbConnection(): Promise<void> {
     mongoose.set('strictQuery', false);
     try {
-        await mongoose.connect(MONGO_URL);
+        await mongoose.connect(MONGO_URL, {
+            maxPoolSize: 100,
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 30000,
+        });
         console.log("\n*************MONGODB connected**************\n");
     } catch (error) {
         console.error("unable to connect with database:", error);
