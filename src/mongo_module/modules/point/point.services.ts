@@ -6,28 +6,30 @@ import Pointer from "../../models/pointer";
 class pointerServices {
 
     private static async aggregatePoints(userID: any, sessionID: any, language: any) {
-        const [aggregated] = await Pointer.aggregate([
-            {
-                $facet: {
-                    userPoints: [
-                        { $match: { userId: userID } },
-                        { $group: { _id: null, total: { $sum: "$points" } } }
-                    ],
-                    sessionPoints: [
-                        { $match: { sessionId: sessionID } },
-                        { $group: { _id: null, total: { $sum: "$points" } } }
-                    ],
-                    languagePoints: [
-                        { $match: { userId: userID, language: language } },
-                        { $group: { _id: null, total: { $sum: "$points" } } }
-                    ]
+        const [[aggregated], sessionResult] = await Promise.all([
+            Pointer.aggregate([
+                { $match: { userId: userID } },
+                {
+                    $facet: {
+                        userPoints: [
+                            { $group: { _id: null, total: { $sum: "$points" } } }
+                        ],
+                        languagePoints: [
+                            { $match: { language: language } },
+                            { $group: { _id: null, total: { $sum: "$points" } } }
+                        ]
+                    }
                 }
-            }
+            ]),
+            Pointer.aggregate([
+                { $match: { sessionId: sessionID } },
+                { $group: { _id: null, total: { $sum: "$points" } } }
+            ])
         ]);
 
         return {
             totalUserPoints: aggregated.userPoints[0]?.total ?? 0,
-            totalSessionPoints: aggregated.sessionPoints[0]?.total ?? 0,
+            totalSessionPoints: sessionResult[0]?.total ?? 0,
             totalLanguagePoints: aggregated.languagePoints[0]?.total ?? 0
         };
     }
