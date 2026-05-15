@@ -15,15 +15,30 @@ class pointerServices {
             const sessionID = result.sessionId;
             const language = result.language
 
-            const pointerUserData = await new CrudOperations(Pointer).getAllDocuments({ userId: userID }, {},{});
-            const pointerSessionData = await new CrudOperations(Pointer).getAllDocuments({ sessionId: sessionID }, {},{});
-            const languageData = await new CrudOperations(Pointer).getAllDocuments({ userId: userID , language: language}, {},{});
-            
             result = result.toObject();
 
-            const totalUserPointer = pointerUserData.reduce((total: any, doc: any) => total + (doc.points || 0), 0);
-            const totalSessionPointer = pointerSessionData.reduce((total: any, doc: any) => total + (doc.points || 0), 0);
-            const totalLanguagePoints = languageData.reduce((total: any, doc: any) => total + (doc.points || 0), 0);
+            const [aggregated] = await Pointer.aggregate([
+                {
+                    $facet: {
+                        userPoints: [
+                            { $match: { userId: userID } },
+                            { $group: { _id: null, total: { $sum: "$points" } } }
+                        ],
+                        sessionPoints: [
+                            { $match: { sessionId: sessionID } },
+                            { $group: { _id: null, total: { $sum: "$points" } } }
+                        ],
+                        languagePoints: [
+                            { $match: { userId: userID, language: language } },
+                            { $group: { _id: null, total: { $sum: "$points" } } }
+                        ]
+                    }
+                }
+            ]);
+
+            const totalUserPointer    = aggregated.userPoints[0]?.total    ?? 0;
+            const totalSessionPointer = aggregated.sessionPoints[0]?.total ?? 0;
+            const totalLanguagePoints = aggregated.languagePoints[0]?.total ?? 0;
 
             result.totalUserPoints = totalUserPointer;
             result.totalSessionPoints = totalSessionPointer;
@@ -40,14 +55,28 @@ class pointerServices {
     // get Pointers by userId
     static async getPointsByUserID(userID: any, sessionID: any,language:any, next: CallableFunction) {
         try {
-                const result = await new CrudOperations(Pointer).getAllDocuments({ userId: userID }, {},{});
-                const totalUserPoints = result.reduce((total: any, doc: any) => total + (doc.points || 0), 0);
+                const [aggregated] = await Pointer.aggregate([
+                    {
+                        $facet: {
+                            userPoints: [
+                                { $match: { userId: userID } },
+                                { $group: { _id: null, total: { $sum: "$points" } } }
+                            ],
+                            sessionPoints: [
+                                { $match: { sessionId: sessionID } },
+                                { $group: { _id: null, total: { $sum: "$points" } } }
+                            ],
+                            languagePoints: [
+                                { $match: { userId: userID, language: language } },
+                                { $group: { _id: null, total: { $sum: "$points" } } }
+                            ]
+                        }
+                    }
+                ]);
 
-                const languageData = await new CrudOperations(Pointer).getAllDocuments({ userId: userID , language: language}, {},{});
-                const totalLanguagePoints = languageData.reduce((total: any, doc: any) => total + (doc.points || 0), 0);
-
-                const sessionData = await new CrudOperations(Pointer).getAllDocuments({ sessionId: sessionID }, {},{});
-                const totalSessionPoints = sessionData.reduce((total: any, doc: any) => total + (doc.points || 0), 0);
+                const totalUserPoints     = aggregated.userPoints[0]?.total    ?? 0;
+                const totalSessionPoints  = aggregated.sessionPoints[0]?.total ?? 0;
+                const totalLanguagePoints = aggregated.languagePoints[0]?.total ?? 0;
 
                 const response = {
                     totalUserPoints,
