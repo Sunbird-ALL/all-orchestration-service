@@ -6,24 +6,21 @@ import Pointer from "../../models/pointer";
 class pointerServices {
 
     private static async aggregatePoints(userID: any, language: any) {
-        const [aggregated] = await Pointer.aggregate([
-            { $match: { userId: userID } },
-            {
-                $facet: {
-                    userPoints: [
-                        { $group: { _id: null, total: { $sum: "$points" } } }
-                    ],
-                    languagePoints: [
-                        { $match: { language: language } },
-                        { $group: { _id: null, total: { $sum: "$points" } } }
-                    ]
-                }
-            }
+    
+        const [userResult, languageResult] = await Promise.all([
+            Pointer.aggregate([
+                { $match: { userId: userID } },
+                { $group: { _id: null, total: { $sum: "$points" } } }
+            ]),
+            Pointer.aggregate([
+                { $match: { userId: userID, language: language } },
+                { $group: { _id: null, total: { $sum: "$points" } } }
+            ])
         ]);
 
         return {
-            totalUserPoints: aggregated.userPoints[0]?.total ?? 0,
-            totalLanguagePoints: aggregated.languagePoints[0]?.total ?? 0
+            totalUserPoints: userResult[0]?.total ?? 0,
+            totalLanguagePoints: languageResult[0]?.total ?? 0
         };
     }
 
