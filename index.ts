@@ -41,8 +41,14 @@ if (cluster.isPrimary) {
     const HOST: string = '0.0.0.0';
     const dataBaseType: string = process.env.DATABASE_TYPE || '';
     const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
+    const appVersion =  process.env.APP_VERSION || 'All'
 
     app.use(requestIdMiddleware);
+
+    app.use((_req, res, next) => {
+      res.setHeader('x-app-version', appVersion);
+      next();
+    });
 
     // Increase request size limit
     app.use(express.json({ limit: '5mb' }));
