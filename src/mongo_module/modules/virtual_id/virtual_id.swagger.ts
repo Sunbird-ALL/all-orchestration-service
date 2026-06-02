@@ -55,26 +55,5 @@
  *         description: Invalid request
  */
 
-/**
- * @swagger
- * /virtualId/processExcelTokens:
- *   post:
- *     summary: Process Excel file with tokens
- *     tags: [Virtual ID]
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               file:
- *                 type: string
- *                 format: binary
- *     responses:
- *       200:
- *         description: Excel processed successfully
- *       400:
- *         description: Invalid file or request
- */
+
 

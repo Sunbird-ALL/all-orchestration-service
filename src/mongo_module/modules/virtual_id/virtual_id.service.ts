@@ -169,31 +169,6 @@ class virtualIdService {
         };
     }
 
-    static async deleteByVirtualId(virtual_id: string | number): Promise<{ success: boolean; message?: string }> {
-        try {
-            const virtualIdNumber = Number(virtual_id);
-            
-            if (isNaN(virtualIdNumber)) {
-                return { success: false, message: 'Invalid virtual_id: must be a number' };
-            }
-            
-            const existingUser = await virtualId.findOne({ virtualId: virtualIdNumber }).maxTimeMS(5000);
-            
-            if (!existingUser) {
-                return { success: false, message: 'User not found' };
-            }
-
-            const deleteResult = await virtualId.deleteOne({ virtualId: virtualIdNumber }).maxTimeMS(5000);
-            
-            if (deleteResult.deletedCount > 0) {
-                return { success: true, message: 'User deleted successfully' };
-            } else {
-                return { success: false, message: 'Failed to delete user' };
-            }
-        } catch (error: any) {
-            throw new Error(error?.message || 'Failed to delete user');
-        }
-    }
 }
 export default virtualIdService;
 
