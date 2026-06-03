@@ -67,12 +67,12 @@ class virtualIdController {
 
     static async tokenStatus(request: Request, response: Response, next: NextFunction) {
         try {
-            const user_id = request.body.user_id;
-            const result = await virtualIdService.tokenStatus(user_id);
-            if (result) {
-                return response.status(200).send(new HttpResponse(null, result, "user status return", null));
+            const { user_id, token } = request.body;
+            if (!user_id || !token) {
+                return next(new HttpException(400, 'user_id and token are required', { code: 'TOKEN_STATUS_FAILED' }));
             }
-            return next(new HttpException(400, 'Unable to load token status', { code: 'TOKEN_STATUS_FAILED' }));
+            const result = await virtualIdService.tokenStatus(user_id, token);
+            return response.status(200).send(new HttpResponse(null, result, "user status return", null));
         } catch (err) {
             next(toHttpException(err));
         }

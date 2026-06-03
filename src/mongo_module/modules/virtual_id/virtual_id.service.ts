@@ -38,21 +38,21 @@ class virtualIdService {
                 .encrypt(hash);
 
             if (existingUser) {
-              await virtualId.updateOne(
-                { userName: lowercaseUsername },
-                {
-                  $set: {
-                    token: jwtEncryptedToken,
-                  },
-                }
-              );
+                await virtualId.updateOne(
+                    { userName: lowercaseUsername },
+                    {
+                        $set: {
+                            token: jwtEncryptedToken,
+                        },
+                    }
+                );
             } else {
-              const newUser = new virtualId({
-                userName: lowercaseUsername,
-                virtualId: virtualID,
-                token: jwtEncryptedToken,
-              });
-              await newUser.save();
+                const newUser = new virtualId({
+                    userName: lowercaseUsername,
+                    virtualId: virtualID,
+                    token: jwtEncryptedToken,
+                });
+                await newUser.save();
             }
             return next(null, {
                 token: jwtEncryptedToken
@@ -123,7 +123,7 @@ class virtualIdService {
 
                 const virtualID = verifiedToken.payload.virtual_id;
                 const user = await virtualId.findOne({
-                  virtualId: virtualID,
+                    virtualId: virtualID,
                 });
 
                 if (!user || user.token !== token) {
@@ -159,13 +159,13 @@ class virtualIdService {
         }
     }
 
-    static async tokenStatus(user_id: string) {
+    static async tokenStatus(user_id: string, token: string) {
         const user = await virtualId.findOne({
             virtualId: user_id,
         });
 
         return {
-            token: user?.token
+            isActive: user?.token === token
         };
     }
 
