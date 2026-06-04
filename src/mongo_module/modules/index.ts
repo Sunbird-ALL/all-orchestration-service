@@ -6,7 +6,6 @@ import pointerRouter from "./point/point.router";
 import learnerProgressRouter from "./learner_progress/learner_progress.router";
 import adaptiveLearningRouter from "./adaptiveLearning/adaptive_learning.router";
 import mozhigalTracker from "./mozhigal_tracker/mozhigal_tracker.router";
-import baselineRouter from "./baseline_assessment/baseline.router";
 import studentRouter from "./student/student.router";
 import clientErrorsRouter from "./client_errors/client_errors.router";
 
@@ -25,8 +24,6 @@ mongoDbRouter.use("/learnerProgress", learnerProgressRouter);
 mongoDbRouter.use("/adaptiveLearning", adaptiveLearningRouter);
 
 mongoDbRouter.use("/tracker", mozhigalTracker);
-
-mongoDbRouter.use("/baselineAssessment", baselineRouter);
 
 mongoDbRouter.use("/student", studentRouter);
 
