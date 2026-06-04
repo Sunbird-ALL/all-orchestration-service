@@ -38,21 +38,21 @@ class virtualIdService {
                 .encrypt(hash);
 
             if (existingUser) {
-              await virtualId.updateOne(
-                { userName: lowercaseUsername },
-                {
-                  $set: {
-                    token: jwtEncryptedToken,
-                  },
-                }
-              );
+                await virtualId.updateOne(
+                    { userName: lowercaseUsername },
+                    {
+                        $set: {
+                            token: jwtEncryptedToken,
+                        },
+                    }
+                );
             } else {
-              const newUser = new virtualId({
-                userName: lowercaseUsername,
-                virtualId: virtualID,
-                token: jwtEncryptedToken,
-              });
-              await newUser.save();
+                const newUser = new virtualId({
+                    userName: lowercaseUsername,
+                    virtualId: virtualID,
+                    token: jwtEncryptedToken,
+                });
+                await newUser.save();
             }
             return next(null, {
                 token: jwtEncryptedToken
@@ -123,7 +123,7 @@ class virtualIdService {
 
                 const virtualID = verifiedToken.payload.virtual_id;
                 const user = await virtualId.findOne({
-                  virtualId: virtualID,
+                    virtualId: virtualID,
                 });
 
                 if (!user || user.token !== token) {
@@ -159,41 +159,16 @@ class virtualIdService {
         }
     }
 
-    static async tokenStatus(user_id: string) {
+    static async tokenStatus(user_id: string, token: string) {
         const user = await virtualId.findOne({
             virtualId: user_id,
         });
 
         return {
-            token: user?.token
+            isActive: user?.token === token
         };
     }
 
-    static async deleteByVirtualId(virtual_id: string | number): Promise<{ success: boolean; message?: string }> {
-        try {
-            const virtualIdNumber = Number(virtual_id);
-            
-            if (isNaN(virtualIdNumber)) {
-                return { success: false, message: 'Invalid virtual_id: must be a number' };
-            }
-            
-            const existingUser = await virtualId.findOne({ virtualId: virtualIdNumber }).maxTimeMS(5000);
-            
-            if (!existingUser) {
-                return { success: false, message: 'User not found' };
-            }
-
-            const deleteResult = await virtualId.deleteOne({ virtualId: virtualIdNumber }).maxTimeMS(5000);
-            
-            if (deleteResult.deletedCount > 0) {
-                return { success: true, message: 'User deleted successfully' };
-            } else {
-                return { success: false, message: 'Failed to delete user' };
-            }
-        } catch (error: any) {
-            throw new Error(error?.message || 'Failed to delete user');
-        }
-    }
 }
 export default virtualIdService;
 
