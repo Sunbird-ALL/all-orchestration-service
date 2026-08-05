@@ -6,7 +6,7 @@ const subSessionId = Joi.string().trim().required().empty();
 const milestoneLevel = Joi.string().trim().required().empty();
 const language = Joi.string()
     .trim()
-    .valid('ta','en','kn','hi','gu','te','or')
+    .valid('ta','en','kn','hi','gu','te','or','ne')
     .required();
 
 const createLearnerProgressValidationSchema = Joi.object({
