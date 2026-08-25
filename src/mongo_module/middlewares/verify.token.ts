@@ -1,22 +1,23 @@
 import * as jose from 'jose';
 import { Request, Response, NextFunction } from 'express';
-import { createHash } from 'crypto';
 import virtualId from '../models/user';
 import HttpException from '../../common/http.Exception/http.Exception';
 
 const verifyToken = async (request: Request, response: Response, next: NextFunction) => {
     try {
-        const secret_key = process.env.JOSE_SECRET || '';
+        const encryptionKeyStr = process.env.JWT_ENCRYPTION_PRIVATE_KEY || '';
+        const signinKeyStr = process.env.JWT_SIGNIN_PRIVATE_KEY || '';
 
-        if (!secret_key) {
+        if (!encryptionKeyStr || !signinKeyStr) {
             return next(
-                new HttpException(500, 'Secret key is missing', {
+                new HttpException(500, 'JWT keys configuration missing', {
                     errorType: 'ConfigurationError',
-                    code: 'MISSING_JOSE_SECRET',
+                    code: 'MISSING_JWT_KEYS',
                 }),
             );
         }
-        const hash = createHash('sha256').update(secret_key).digest();
+        // 1. Decrypt JWE token using base64url-decoded JWT_ENCRYPTION_PRIVATE_KEY
+        const jwtEncryptionKey = jose.base64url.decode(encryptionKeyStr);
 
         const authHeader = request.header('authorization');
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -29,7 +30,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
         }
         const token = authHeader.split(' ')[1];
 
-        const jwtDecryptedToken = await jose.jwtDecrypt(token, hash);
+        const jwtDecryptedToken = await jose.jwtDecrypt(token, jwtEncryptionKey);
         if (!jwtDecryptedToken.payload.jwtSignedToken) {
             return next(
                 new HttpException(400, 'Invalid token payload: Missing jwtSignedToken', {
@@ -39,11 +40,13 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
             );
         }
 
-        const jwtSigninKey = new TextEncoder().encode(process.env.JWT_SIGNIN_PRIVATE_KEY || '');
+        // 2. Verify inner JWS signature using UTF-8 encoded JWT_SIGNIN_PRIVATE_KEY
+        const jwtSigninKey = new TextEncoder().encode(signinKeyStr);
         const jwtSignedToken = String(jwtDecryptedToken.payload.jwtSignedToken);
         const verifiedToken = await jose.jwtVerify(jwtSignedToken, jwtSigninKey);
 
-        const { exp, virtual_id } = verifiedToken.payload;
+        const { exp } = verifiedToken.payload;
+        const virtual_id = (verifiedToken.payload as any).virtual_id || (verifiedToken.payload as any).virtualId;
         if (!exp || exp <= Math.floor(Date.now() / 1000)) {
             return next(
                 new HttpException(401, 'Token expired', {
@@ -62,11 +65,33 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
             );
         }
 
-        const token_status = await virtualId.findOne({
-            virtualId: virtual_id,
-        });
+        // 3. Validate token status against axl-login-service tokenStatus API (or DB fallback)
+        const loginServiceUrl = process.env.AXL_LOGIN_SERVICE_URL || 'http://localhost:8000';
+        let activeToken: string | null = null;
 
-        if (!token_status || token_status.token == null || token_status.token !== token) {
+        try {
+            const statusRes = await fetch(`${loginServiceUrl}/api/v1/virtualId/tokenStatus`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: virtual_id }),
+            });
+            const statusData: any = await statusRes.json();
+            activeToken =
+                statusData?.responseObj?.responseDataParams?.data?.token ??
+                statusData?.data?.token ??
+                statusData?.token ??
+                null;
+        } catch (fetchErr) {
+            // Fallback to local DB check if auth service call fails
+            const token_status = await virtualId.findOne({
+                virtualId: virtual_id,
+            });
+            if (token_status && token_status.token) {
+                activeToken = token_status.token;
+            }
+        }
+
+        if (!activeToken || activeToken !== token) {
             return next(
                 new HttpException(401, 'User logged out', {
                     errorType: 'AuthenticationError',
