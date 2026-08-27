@@ -2,18 +2,8 @@ import { SignJWT } from "jose";
 import { jwtDecode } from "jwt-decode";
 import virtualId from "../../models/user";
 import * as jose from 'jose';
-import { createHash } from "crypto";
 import HttpException from "../../../common/http.Exception/http.Exception";
-import { getActiveTokenByUserId } from "../../../common/authHelper";
-
-function getEncryptionKey(): Uint8Array {
-    const encKeyStr = process.env.JWT_ENCRYPTION_PRIVATE_KEY;
-    if (encKeyStr) {
-        return jose.base64url.decode(encKeyStr);
-    }
-    const secret_key = process.env.JOSE_SECRET || '';
-    return createHash('sha256').update(secret_key).digest();
-}
+import { getActiveTokenByUserId, getEncryptionKey } from "../../../common/authHelper";
 
 class virtualIdService {
 

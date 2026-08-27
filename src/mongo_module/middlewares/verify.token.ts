@@ -1,11 +1,11 @@
 import * as jose from 'jose';
 import { Request, Response, NextFunction } from 'express';
 import HttpException from '../../common/http.Exception/http.Exception';
-import { getActiveTokenByUserId } from '../../common/authHelper';
+import { getActiveTokenByUserId, getEncryptionKey, getSigningKey } from '../../common/authHelper';
 
 const verifyToken = async (request: Request, response: Response, next: NextFunction) => {
     try {
-        const encryptionKeyStr = process.env.JWT_ENCRYPTION_PRIVATE_KEY || '';
+        const encryptionKeyStr = process.env.JWT_ENCRYPTION_PRIVATE_KEY || process.env.JOSE_SECRET || '';
         const signinKeyStr = process.env.JWT_SIGNIN_PRIVATE_KEY || '';
 
         if (!encryptionKeyStr || !signinKeyStr) {
@@ -16,8 +16,8 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
                 }),
             );
         }
-        // 1. Decrypt JWE token using base64url-decoded JWT_ENCRYPTION_PRIVATE_KEY
-        const jwtEncryptionKey = jose.base64url.decode(encryptionKeyStr);
+        // 1. Decrypt JWE token using shared encryption key
+        const jwtEncryptionKey = getEncryptionKey();
 
         const authHeader = request.header('authorization');
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -41,7 +41,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
         }
 
         // 2. Verify inner JWS signature using UTF-8 encoded JWT_SIGNIN_PRIVATE_KEY
-        const jwtSigninKey = new TextEncoder().encode(signinKeyStr);
+        const jwtSigninKey = getSigningKey();
         const jwtSignedToken = String(jwtDecryptedToken.payload.jwtSignedToken);
         const verifiedToken = await jose.jwtVerify(jwtSignedToken, jwtSigninKey);
 
