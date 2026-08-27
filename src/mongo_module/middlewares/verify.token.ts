@@ -3,6 +3,48 @@ import { Request, Response, NextFunction } from 'express';
 import virtualId from '../models/user';
 import HttpException from '../../common/http.Exception/http.Exception';
 
+import http from 'http';
+import https from 'https';
+
+const postJson = (urlStr: string, body: any): Promise<any> => {
+    return new Promise((resolve, reject) => {
+        try {
+            const url = new URL(urlStr);
+            const data = JSON.stringify(body);
+            const transport = url.protocol === 'https:' ? https : http;
+            const req = transport.request(
+                url,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Content-Length': Buffer.byteLength(data),
+                    },
+                },
+                (res) => {
+                    let responseBody = '';
+                    res.on('data', (chunk) => {
+                        responseBody += chunk;
+                    });
+                    res.on('end', () => {
+                        try {
+                            const parsed = JSON.parse(responseBody);
+                            resolve(parsed);
+                        } catch (e) {
+                            resolve(null);
+                        }
+                    });
+                },
+            );
+            req.on('error', (err) => reject(err));
+            req.write(data);
+            req.end();
+        } catch (err) {
+            reject(err);
+        }
+    });
+};
+
 const verifyToken = async (request: Request, response: Response, next: NextFunction) => {
     try {
         const encryptionKeyStr = process.env.JWT_ENCRYPTION_PRIVATE_KEY || '';
@@ -70,19 +112,20 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
         let activeToken: string | null = null;
 
         try {
-            const statusRes = await fetch(`${loginServiceUrl}/api/v1/virtualId/tokenStatus`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: virtual_id }),
+            const statusData: any = await postJson(`${loginServiceUrl}/api/v1/virtualId/tokenStatus`, {
+                user_id: virtual_id,
             });
-            const statusData: any = await statusRes.json();
             activeToken =
                 statusData?.responseObj?.responseDataParams?.data?.token ??
                 statusData?.data?.token ??
                 statusData?.token ??
                 null;
         } catch (fetchErr) {
-            // Fallback to local DB check if auth service call fails
+            // Remote auth service call failed
+        }
+
+        // Fallback to local DB check if auth service did not return token
+        if (!activeToken) {
             const token_status = await virtualId.findOne({
                 virtualId: virtual_id,
             });

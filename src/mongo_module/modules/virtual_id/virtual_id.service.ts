@@ -4,6 +4,47 @@ import virtualId from "../../models/user";
 import * as jose from 'jose';
 import { createHash } from "crypto";
 import HttpException from "../../../common/http.Exception/http.Exception";
+import http from 'http';
+import https from 'https';
+
+const postJson = (urlStr: string, body: any): Promise<any> => {
+    return new Promise((resolve, reject) => {
+        try {
+            const url = new URL(urlStr);
+            const data = JSON.stringify(body);
+            const transport = url.protocol === 'https:' ? https : http;
+            const req = transport.request(
+                url,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Content-Length': Buffer.byteLength(data),
+                    },
+                },
+                (res) => {
+                    let responseBody = '';
+                    res.on('data', (chunk) => {
+                        responseBody += chunk;
+                    });
+                    res.on('end', () => {
+                        try {
+                            const parsed = JSON.parse(responseBody);
+                            resolve(parsed);
+                        } catch (e) {
+                            resolve(null);
+                        }
+                    });
+                },
+            );
+            req.on('error', (err) => reject(err));
+            req.write(data);
+            req.end();
+        } catch (err) {
+            reject(err);
+        }
+    });
+};
 
 function getEncryptionKey(): Uint8Array {
     const encKeyStr = process.env.JWT_ENCRYPTION_PRIVATE_KEY;
@@ -157,12 +198,33 @@ class virtualIdService {
     }
 
     static async tokenStatus(user_id: string, token: string) {
-        const user = await virtualId.findOne({
-            virtualId: user_id,
-        });
+        const loginServiceUrl = process.env.AXL_LOGIN_SERVICE_URL || 'http://axl-login-service:8000';
+        let activeToken: string | null = null;
+
+        try {
+            const statusData: any = await postJson(`${loginServiceUrl}/api/v1/virtualId/tokenStatus`, {
+                user_id: Number(user_id) || user_id,
+            });
+            activeToken =
+                statusData?.responseObj?.responseDataParams?.data?.token ??
+                statusData?.data?.token ??
+                statusData?.token ??
+                null;
+        } catch (fetchErr) {
+            // Error calling remote service
+        }
+
+        if (!activeToken) {
+            const user = await virtualId.findOne({
+                virtualId: user_id,
+            });
+            if (user && user.token) {
+                activeToken = user.token;
+            }
+        }
 
         return {
-            isActive: user?.token === token
+            isActive: Boolean(activeToken && activeToken === token)
         };
     }
 
