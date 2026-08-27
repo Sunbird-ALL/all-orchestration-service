@@ -63,20 +63,22 @@ export const postJson = <T = any>(urlStr: string, body: unknown): Promise<T | nu
 };
 
 export const getActiveTokenByUserId = async (userId: number | string): Promise<string | null> => {
-    const loginServiceUrl = process.env.AXL_LOGIN_SERVICE_URL || 'http://axl-login-service:8000';
+    const loginServiceUrl = process.env.AXL_LOGIN_SERVICE_URL;
     let activeToken: string | null = null;
 
-    try {
-        const statusData: any = await postJson(`${loginServiceUrl}/api/v1/virtualId/tokenStatus`, {
-            user_id: Number(userId) || userId,
-        });
-        activeToken =
-            statusData?.responseObj?.responseDataParams?.data?.token ??
-            statusData?.data?.token ??
-            statusData?.token ??
-            null;
-    } catch (fetchErr) {
-        console.error('Error fetching token status from auth service:', fetchErr);
+    if (loginServiceUrl) {
+        try {
+            const statusData: any = await postJson(`${loginServiceUrl}/api/v1/virtualId/tokenStatus`, {
+                user_id: Number(userId) || userId,
+            });
+            activeToken =
+                statusData?.responseObj?.responseDataParams?.data?.token ??
+                statusData?.data?.token ??
+                statusData?.token ??
+                null;
+        } catch (fetchErr) {
+            console.error('Error fetching token status from auth service:', fetchErr);
+        }
     }
 
     if (!activeToken) {
