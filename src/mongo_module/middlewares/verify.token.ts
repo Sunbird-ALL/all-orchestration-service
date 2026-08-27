@@ -1,49 +1,7 @@
 import * as jose from 'jose';
 import { Request, Response, NextFunction } from 'express';
-import virtualId from '../models/user';
 import HttpException from '../../common/http.Exception/http.Exception';
-
-import http from 'http';
-import https from 'https';
-
-const postJson = (urlStr: string, body: any): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        try {
-            const url = new URL(urlStr);
-            const data = JSON.stringify(body);
-            const transport = url.protocol === 'https:' ? https : http;
-            const req = transport.request(
-                url,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Content-Length': Buffer.byteLength(data),
-                    },
-                },
-                (res) => {
-                    let responseBody = '';
-                    res.on('data', (chunk) => {
-                        responseBody += chunk;
-                    });
-                    res.on('end', () => {
-                        try {
-                            const parsed = JSON.parse(responseBody);
-                            resolve(parsed);
-                        } catch (e) {
-                            resolve(null);
-                        }
-                    });
-                },
-            );
-            req.on('error', (err) => reject(err));
-            req.write(data);
-            req.end();
-        } catch (err) {
-            reject(err);
-        }
-    });
-};
+import { getActiveTokenByUserId } from '../../common/authHelper';
 
 const verifyToken = async (request: Request, response: Response, next: NextFunction) => {
     try {
@@ -108,31 +66,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
         }
 
         // 3. Validate token status against axl-login-service tokenStatus API (or DB fallback)
-        const loginServiceUrl = process.env.AXL_LOGIN_SERVICE_URL || 'http://localhost:8000';
-        let activeToken: string | null = null;
-
-        try {
-            const statusData: any = await postJson(`${loginServiceUrl}/api/v1/virtualId/tokenStatus`, {
-                user_id: virtual_id,
-            });
-            activeToken =
-                statusData?.responseObj?.responseDataParams?.data?.token ??
-                statusData?.data?.token ??
-                statusData?.token ??
-                null;
-        } catch (fetchErr) {
-            // Remote auth service call failed
-        }
-
-        // Fallback to local DB check if auth service did not return token
-        if (!activeToken) {
-            const token_status = await virtualId.findOne({
-                virtualId: virtual_id,
-            });
-            if (token_status && token_status.token) {
-                activeToken = token_status.token;
-            }
-        }
+        const activeToken = await getActiveTokenByUserId(virtual_id);
 
         if (!activeToken || activeToken !== token) {
             return next(
