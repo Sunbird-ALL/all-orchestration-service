@@ -55,7 +55,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
             );
         }
 
-        if (!virtualId || typeof virtualId !== 'string' || 'number') {
+        if (!virtualId || (typeof virtualId !== 'string' && typeof virtualId !== 'number')) {
             return next(
                 new HttpException(400, 'Invalid token payload: Missing virtual_id', {
                     errorType: 'BadRequest',
