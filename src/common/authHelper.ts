@@ -5,7 +5,7 @@ import * as jose from 'jose';
 import virtualId from '../mongo_module/models/user';
 
 export const getEncryptionKey = (): Uint8Array => {
-    const encKeyStr = process.env.JWT_ENCRYPTION_PRIVATE_KEY;
+    const encKeyStr = process.env.JOSE_ENCRYPTION_PRIVATE_KEY;
     if (encKeyStr) {
         return jose.base64url.decode(encKeyStr);
     }
@@ -14,7 +14,7 @@ export const getEncryptionKey = (): Uint8Array => {
 };
 
 export const getSigningKey = (): Uint8Array => {
-    const signinKeyStr = process.env.JWT_SIGNIN_PRIVATE_KEY || '';
+    const signinKeyStr = process.env.JOSE_SIGNIN_PRIVATE_KEY || '';
     return new TextEncoder().encode(signinKeyStr);
 };
 
@@ -68,7 +68,7 @@ export const getActiveTokenByUserId = async (userId: number | string): Promise<s
 
     if (loginServiceUrl) {
         try {
-            const statusData: any = await postJson(`${loginServiceUrl}/api/v1/virtualId/tokenStatus`, {
+            const statusData: any = await postJson(loginServiceUrl, {
                 user_id: Number(userId) || userId,
             });
             activeToken =

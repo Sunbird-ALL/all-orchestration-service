@@ -5,14 +5,14 @@ import { getActiveTokenByUserId, getEncryptionKey, getSigningKey } from '../../c
 
 const verifyToken = async (request: Request, response: Response, next: NextFunction) => {
     try {
-        const encryptionKeyStr = process.env.JWT_ENCRYPTION_PRIVATE_KEY || process.env.JOSE_SECRET || '';
-        const signinKeyStr = process.env.JWT_SIGNIN_PRIVATE_KEY || '';
+        const encryptionKeyStr = process.env.JOSE_ENCRYPTION_PRIVATE_KEY || process.env.JOSE_SECRET || '';
+        const signinKeyStr = process.env.JOSE_SIGNIN_PRIVATE_KEY || '';
 
         if (!encryptionKeyStr || !signinKeyStr) {
             return next(
-                new HttpException(500, 'JWT keys configuration missing', {
+                new HttpException(500, 'Secret key is missing', {
                     errorType: 'ConfigurationError',
-                    code: 'MISSING_JWT_KEYS',
+                    code: 'MISSING_JOSE_SECRET',
                 }),
             );
         }
@@ -40,7 +40,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
             );
         }
 
-        // 2. Verify inner JWS signature using UTF-8 encoded JWT_SIGNIN_PRIVATE_KEY
+        // 2. Verify inner JWS signature using UTF-8 encoded JOSE_SIGNIN_PRIVATE_KEY
         const jwtSigninKey = getSigningKey();
         const jwtSignedToken = String(jwtDecryptedToken.payload.jwtSignedToken);
         const verifiedToken = await jose.jwtVerify(jwtSignedToken, jwtSigninKey);
