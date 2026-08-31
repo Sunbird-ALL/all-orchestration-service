@@ -24,7 +24,7 @@ class virtualIdService {
 
             // **Step 1: Sign the JWT Token**
             const jwtSigninKey = new TextEncoder().encode(process.env.JOSE_SIGNIN_PRIVATE_KEY);
-            const jwtSignedToken = await new jose.SignJWT({ virtual_id: virtualID })
+            const jwtSignedToken = await new jose.SignJWT({ virtualId: virtualID })
                 .setProtectedHeader({ alg: 'HS256' })
                 .setExpirationTime(token_exp_time)
                 .sign(jwtSigninKey);
