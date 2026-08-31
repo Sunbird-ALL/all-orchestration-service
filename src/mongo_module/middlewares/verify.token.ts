@@ -45,8 +45,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
         const jwtSignedToken = String(jwtDecryptedToken.payload.jwtSignedToken);
         const verifiedToken = await jose.jwtVerify(jwtSignedToken, jwtSigninKey);
 
-        const { exp } = verifiedToken.payload;
-        const virtual_id = (verifiedToken.payload as any).virtual_id || (verifiedToken.payload as any).virtualId;
+        const { exp, virtualId } = verifiedToken.payload;
         if (!exp || exp <= Math.floor(Date.now() / 1000)) {
             return next(
                 new HttpException(401, 'Token expired', {
@@ -56,7 +55,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
             );
         }
 
-        if (!virtual_id) {
+        if (!virtualId || typeof virtualId !== 'string' || 'number') {
             return next(
                 new HttpException(400, 'Invalid token payload: Missing virtual_id', {
                     errorType: 'BadRequest',
@@ -66,7 +65,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
         }
 
         // 3. Validate token status against axl-login-service tokenStatus API (or DB fallback)
-        const activeToken = await getActiveTokenByUserId(virtual_id);
+        const activeToken = await getActiveTokenByUserId(virtualId);
 
         if (!activeToken || activeToken !== token) {
             return next(
@@ -76,7 +75,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
                 }),
             );
         }
-        response.locals.virtual_id = virtual_id;
+        response.locals.virtual_id = virtualId;
         next();
     } catch (error) {
         if (error instanceof jose.errors.JWTExpired) {
