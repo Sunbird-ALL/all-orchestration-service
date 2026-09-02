@@ -1,14 +1,14 @@
 import * as jose from 'jose';
 import { Request, Response, NextFunction } from 'express';
-import { createHash } from 'crypto';
-import virtualId from '../models/user';
 import HttpException from '../../common/http.Exception/http.Exception';
+import { getActiveTokenByUserId, getEncryptionKey, getSigningKey } from '../../common/authHelper';
 
 const verifyToken = async (request: Request, response: Response, next: NextFunction) => {
     try {
-        const secret_key = process.env.JOSE_SECRET || '';
+        const encryptionKeyStr = process.env.JOSE_ENCRYPTION_PRIVATE_KEY || process.env.JOSE_SECRET || '';
+        const signinKeyStr = process.env.JOSE_SIGNIN_PRIVATE_KEY || '';
 
-        if (!secret_key) {
+        if (!encryptionKeyStr || !signinKeyStr) {
             return next(
                 new HttpException(500, 'Secret key is missing', {
                     errorType: 'ConfigurationError',
@@ -16,7 +16,8 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
                 }),
             );
         }
-        const hash = createHash('sha256').update(secret_key).digest();
+        // 1. Decrypt JWE token using shared encryption key
+        const jwtEncryptionKey = getEncryptionKey();
 
         const authHeader = request.header('authorization');
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -29,7 +30,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
         }
         const token = authHeader.split(' ')[1];
 
-        const jwtDecryptedToken = await jose.jwtDecrypt(token, hash);
+        const jwtDecryptedToken = await jose.jwtDecrypt(token, jwtEncryptionKey);
         if (!jwtDecryptedToken.payload.jwtSignedToken) {
             return next(
                 new HttpException(400, 'Invalid token payload: Missing jwtSignedToken', {
@@ -39,11 +40,12 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
             );
         }
 
-        const jwtSigninKey = new TextEncoder().encode(process.env.JWT_SIGNIN_PRIVATE_KEY || '');
+        // 2. Verify inner JWS signature using UTF-8 encoded JOSE_SIGNIN_PRIVATE_KEY
+        const jwtSigninKey = getSigningKey();
         const jwtSignedToken = String(jwtDecryptedToken.payload.jwtSignedToken);
         const verifiedToken = await jose.jwtVerify(jwtSignedToken, jwtSigninKey);
 
-        const { exp, virtual_id } = verifiedToken.payload;
+        const { exp, virtualId } = verifiedToken.payload;
         if (!exp || exp <= Math.floor(Date.now() / 1000)) {
             return next(
                 new HttpException(401, 'Token expired', {
@@ -53,7 +55,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
             );
         }
 
-        if (!virtual_id) {
+        if (!virtualId || (typeof virtualId !== 'string' && typeof virtualId !== 'number')) {
             return next(
                 new HttpException(400, 'Invalid token payload: Missing virtual_id', {
                     errorType: 'BadRequest',
@@ -62,11 +64,10 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
             );
         }
 
-        const token_status = await virtualId.findOne({
-            virtualId: virtual_id,
-        });
+        // 3. Validate token status against axl-login-service tokenStatus API (or DB fallback)
+        const activeToken = await getActiveTokenByUserId(virtualId);
 
-        if (!token_status || token_status.token == null || token_status.token !== token) {
+        if (!activeToken || activeToken !== token) {
             return next(
                 new HttpException(401, 'User logged out', {
                     errorType: 'AuthenticationError',
@@ -74,7 +75,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
                 }),
             );
         }
-        response.locals.virtual_id = virtual_id;
+        response.locals.virtual_id = virtualId;
         next();
     } catch (error) {
         if (error instanceof jose.errors.JWTExpired) {

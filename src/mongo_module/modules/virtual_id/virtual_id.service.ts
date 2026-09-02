@@ -2,16 +2,15 @@ import { SignJWT } from "jose";
 import { jwtDecode } from "jwt-decode";
 import virtualId from "../../models/user";
 import * as jose from 'jose';
-import { createHash } from "crypto";
 import HttpException from "../../../common/http.Exception/http.Exception";
+import { getActiveTokenByUserId, getEncryptionKey } from "../../../common/authHelper";
 
 class virtualIdService {
 
     // MongoDB send virtual_id token
     static async generateId(username: any, next: CallableFunction) {
         try {
-            const secret_key = process.env.JOSE_SECRET || '';
-            const hash = createHash('sha256').update(secret_key).digest();
+            const encryptionKey = getEncryptionKey();
             const lowercaseUsername = username.trim().toLowerCase();
             const existingUser = await virtualId.findOne({ userName: lowercaseUsername });
             const token_exp_time = process.env.JWT_EXPIRATION || '1h'
@@ -24,8 +23,8 @@ class virtualIdService {
             }
 
             // **Step 1: Sign the JWT Token**
-            const jwtSigninKey = new TextEncoder().encode(process.env.JWT_SIGNIN_PRIVATE_KEY);
-            const jwtSignedToken = await new jose.SignJWT({ virtual_id: virtualID })
+            const jwtSigninKey = new TextEncoder().encode(process.env.JOSE_SIGNIN_PRIVATE_KEY);
+            const jwtSignedToken = await new jose.SignJWT({ virtualId: virtualID })
                 .setProtectedHeader({ alg: 'HS256' })
                 .setExpirationTime(token_exp_time)
                 .sign(jwtSigninKey);
@@ -35,7 +34,7 @@ class virtualIdService {
             const jwtEncryptedToken = await new jose.EncryptJWT({ jwtSignedToken })
                 .setProtectedHeader({ alg: 'dir', enc: 'A128CBC-HS256' })
                 .setExpirationTime(token_exp_time)
-                .encrypt(hash);
+                .encrypt(encryptionKey);
 
             if (existingUser) {
                 await virtualId.updateOne(
@@ -65,16 +64,10 @@ class virtualIdService {
     // Decode JOSE token and extract virtual ID
     static async decodeToken(encryptedToken: string): Promise<{ virtual_id: string; success: boolean; error?: string }> {
         try {
-            const secret = process.env.JOSE_SECRET;
-            if (!secret) {
-                throw new Error('JOSE_SECRET environment variable is not set');
-            }
-
-            // Generate a 32-byte key from your secret (SHA-256)
-            const key = createHash('sha256').update(secret).digest();
+            const key = getEncryptionKey();
 
             // Decrypt the token and extract the payload
-            const { payload, protectedHeader } = await jose.jwtDecrypt(encryptedToken, key, {
+            const { payload } = await jose.jwtDecrypt(encryptedToken, key, {
                 clockTolerance: 60 * 60 * 24 * 365,  // 1 year tolerance
                 maxTokenAge: undefined              // disable age-based rejection
             });
@@ -104,19 +97,14 @@ class virtualIdService {
                 throw new HttpException(400, 'Token is required');
             }
 
-            // Step 1: Verify token structure
-            const secret_key = process.env.JOSE_SECRET;
-            if (!secret_key) {
-                throw new HttpException(500, 'Server configuration error');
-            }
-            const hash = createHash('sha256').update(secret_key).digest();
+            // Step 1: Get encryption key & decrypt token
+            const key = getEncryptionKey();
 
-            // Step 2: Decrypt and verify token (with expiration tolerance)
             try {
-                const jwtDecryptedToken = await jose.jwtDecrypt(token, hash);
+                const jwtDecryptedToken = await jose.jwtDecrypt(token, key);
                 const jwtSignedToken = String(jwtDecryptedToken.payload.jwtSignedToken);
 
-                const jwtSigninKey = new TextEncoder().encode(process.env.JWT_SIGNIN_PRIVATE_KEY);
+                const jwtSigninKey = new TextEncoder().encode(process.env.JOSE_SIGNIN_PRIVATE_KEY);
                 const verifiedToken = await jose.jwtVerify(jwtSignedToken, jwtSigninKey, {
                     clockTolerance: 300 // 5 minutes tolerance for clock skew
                 });
@@ -160,12 +148,9 @@ class virtualIdService {
     }
 
     static async tokenStatus(user_id: string, token: string) {
-        const user = await virtualId.findOne({
-            virtualId: user_id,
-        });
-
+        const activeToken = await getActiveTokenByUserId(user_id);
         return {
-            isActive: user?.token === token
+            isActive: Boolean(activeToken && activeToken === token)
         };
     }
 
