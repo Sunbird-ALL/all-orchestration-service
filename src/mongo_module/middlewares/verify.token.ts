@@ -16,6 +16,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
                 }),
             );
         }
+        console.log();
         // 1. Decrypt JWE token using shared encryption key
         const jwtEncryptionKey = getEncryptionKey();
 
