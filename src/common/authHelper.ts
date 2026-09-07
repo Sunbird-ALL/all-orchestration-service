@@ -62,7 +62,7 @@ export const postJson = <T = any>(urlStr: string, body: unknown): Promise<T | nu
     });
 };
 
-export const getActiveTokenByUserId = async (userId: number | string): Promise<string | null> => {
+export const getActiveTokenByUserId = async (userId: number | string, token?: string): Promise<string | null> => {
     const loginServiceUrl = process.env.AXL_LOGIN_SERVICE_URL;
     let activeToken: string | null = null;
 
@@ -70,12 +70,14 @@ export const getActiveTokenByUserId = async (userId: number | string): Promise<s
         try {
             const statusData: any = await postJson(loginServiceUrl, {
                 user_id: Number(userId) || userId,
+                token,
             });
-            activeToken =
-                statusData?.responseObj?.responseDataParams?.data?.token ??
-                statusData?.data?.token ??
-                statusData?.token ??
-                null;
+            const isActive =
+                statusData?.responseObj?.responseDataParams?.data?.isActive ??
+                statusData?.data?.isActive ??
+                statusData?.isActive ??
+                false;
+            activeToken = isActive ? (token ?? null) : null;
         } catch (fetchErr) {
             console.error('Error fetching token status from auth service:', fetchErr);
         }

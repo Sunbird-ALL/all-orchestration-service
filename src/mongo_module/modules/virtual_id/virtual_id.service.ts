@@ -148,7 +148,7 @@ class virtualIdService {
     }
 
     static async tokenStatus(user_id: string, token: string) {
-        const activeToken = await getActiveTokenByUserId(user_id);
+        const activeToken = await getActiveTokenByUserId(user_id, token);
         return {
             isActive: Boolean(activeToken && activeToken === token)
         };

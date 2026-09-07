@@ -65,7 +65,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
         }
 
         // 3. Validate token status against axl-login-service tokenStatus API (or DB fallback)
-        const activeToken = await getActiveTokenByUserId(virtualId);
+        const activeToken = await getActiveTokenByUserId(virtualId, token);
 
         if (!activeToken || activeToken !== token) {
             return next(
