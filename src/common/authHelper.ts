@@ -18,6 +18,15 @@ export const getSigningKey = (): Uint8Array => {
     return new TextEncoder().encode(signinKeyStr);
 };
 
+const AUTH_SERVICE_TIMEOUT_MS = Number(process.env.AXL_LOGIN_SERVICE_TIMEOUT_MS) || 5000;
+
+export class AuthServiceUnavailableError extends Error {
+    constructor(message: string, public readonly cause?: unknown) {
+        super(message);
+        this.name = 'AuthServiceUnavailableError';
+    }
+}
+
 export const postJson = <T = any>(urlStr: string, body: unknown): Promise<T | null> => {
     return new Promise((resolve, reject) => {
         try {
@@ -32,6 +41,7 @@ export const postJson = <T = any>(urlStr: string, body: unknown): Promise<T | nu
                         'Content-Type': 'application/json',
                         'Content-Length': Buffer.byteLength(data),
                     },
+                    timeout: AUTH_SERVICE_TIMEOUT_MS,
                 },
                 (res) => {
                     let responseBody = '';
@@ -44,27 +54,34 @@ export const postJson = <T = any>(urlStr: string, body: unknown): Promise<T | nu
                             resolve(parsed);
                         } catch (parseErr) {
                             console.error('Failed to parse JSON response from auth service:', parseErr);
-                            reject(parseErr);
+                            reject(new AuthServiceUnavailableError('Auth service returned an invalid response', parseErr));
                         }
                     });
                 },
             );
+            req.on('timeout', () => {
+                req.destroy(new AuthServiceUnavailableError(`Auth service request timed out after ${AUTH_SERVICE_TIMEOUT_MS}ms`));
+            });
             req.on('error', (err) => {
                 console.error('HTTP request error to auth service:', err.message);
-                reject(err);
+                reject(new AuthServiceUnavailableError('Auth service is unreachable', err));
             });
             req.write(data);
             req.end();
         } catch (err) {
             console.error('Invalid URL or request setup:', err);
-            reject(err);
+            reject(new AuthServiceUnavailableError('Auth service request could not be constructed', err));
         }
     });
 };
 
-export const getActiveTokenByUserId = async (userId: number | string, token?: string): Promise<string | null> => {
+export const getActiveTokenByUserId = async (
+    userId: number | string,
+    token?: string,
+): Promise<{ activeToken: string | null; authServiceUnavailable: boolean }> => {
     const loginServiceUrl = process.env.AXL_LOGIN_SERVICE_URL;
     let activeToken: string | null = null;
+    let authServiceUnavailable = false;
 
     if (loginServiceUrl) {
         try {
@@ -80,7 +97,11 @@ export const getActiveTokenByUserId = async (userId: number | string, token?: st
             activeToken = isActive ? (token ?? null) : null;
         } catch (fetchErr) {
             console.error('Error fetching token status from auth service:', fetchErr);
+            authServiceUnavailable = fetchErr instanceof AuthServiceUnavailableError;
         }
+    } else {
+        console.error('AXL_LOGIN_SERVICE_URL is not configured; skipping remote token status check');
+        authServiceUnavailable = true;
     }
 
     if (!activeToken) {
@@ -92,5 +113,5 @@ export const getActiveTokenByUserId = async (userId: number | string, token?: st
         }
     }
 
-    return activeToken;
+    return { activeToken, authServiceUnavailable };
 };
