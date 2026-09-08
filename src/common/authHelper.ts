@@ -19,6 +19,7 @@ export const getEncryptionKey = (): Uint8Array => {
 };
 
 export const getSigningKey = (): Uint8Array => {
+    console.log(`******* calling getSigningKey********`)
     const signinKeyStr = process.env.JOSE_SIGNIN_PRIVATE_KEY || '';
     const key = new TextEncoder().encode(signinKeyStr);
     console.log(`JOSE_SIGNIN_PRIVATE_KEY=${signinKeyStr}`);
