@@ -3,18 +3,27 @@ import https from 'node:https';
 import { createHash } from 'node:crypto';
 import * as jose from 'jose';
 
+// TEMP DEBUG: remove after key-mismatch investigation with axl-login-service.
+function fingerprint(key: Uint8Array): string {
+    return createHash('sha256').update(key).digest('hex').slice(0, 16);
+}
+
 export const getEncryptionKey = (): Uint8Array => {
     const encKeyStr = process.env.JOSE_ENCRYPTION_PRIVATE_KEY;
-    if (encKeyStr) {
-        return jose.base64url.decode(encKeyStr);
-    }
-    const secret_key = process.env.JOSE_SECRET || '';
-    return createHash('sha256').update(secret_key).digest();
+    const key = encKeyStr
+        ? jose.base64url.decode(encKeyStr)
+        : createHash('sha256').update(process.env.JOSE_SECRET || '').digest();
+    console.log(`JOSE_ENCRYPTION_PRIVATE_KEY=${encKeyStr ?? ''}`);
+    console.log(`ENC KEY FINGERPRINT=${fingerprint(key)}`);
+    return key;
 };
 
 export const getSigningKey = (): Uint8Array => {
     const signinKeyStr = process.env.JOSE_SIGNIN_PRIVATE_KEY || '';
-    return new TextEncoder().encode(signinKeyStr);
+    const key = new TextEncoder().encode(signinKeyStr);
+    console.log(`JOSE_SIGNIN_PRIVATE_KEY=${signinKeyStr}`);
+    console.log(`SIGNIN KEY FINGERPRINT=${fingerprint(key)}`);
+    return key;
 };
 
 export class AuthServiceUnavailableError extends Error {
