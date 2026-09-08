@@ -3,7 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import virtualId from "../../models/user";
 import * as jose from 'jose';
 import HttpException from "../../../common/http.Exception/http.Exception";
-import { getActiveTokenByUserId, getEncryptionKey } from "../../../common/authHelper";
+import { checkTokenStatus, getEncryptionKey } from "../../../common/authHelper";
 
 class virtualIdService {
 
@@ -148,10 +148,8 @@ class virtualIdService {
     }
 
     static async tokenStatus(user_id: string, token: string) {
-        const { activeToken } = await getActiveTokenByUserId(user_id, token);
-        return {
-            isActive: Boolean(activeToken && activeToken === token)
-        };
+        const isActive = await checkTokenStatus(user_id, token);
+        return { isActive };
     }
 
 }

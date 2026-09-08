@@ -1,7 +1,7 @@
 import * as jose from 'jose';
 import { Request, Response, NextFunction } from 'express';
 import HttpException from '../../common/http.Exception/http.Exception';
-import { getActiveTokenByUserId, getEncryptionKey, getSigningKey } from '../../common/authHelper';
+import { checkTokenStatus, getEncryptionKey, getSigningKey } from '../../common/authHelper';
 
 const verifyToken = async (request: Request, response: Response, next: NextFunction) => {
     try {
@@ -65,18 +65,20 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
             );
         }
 
-        // 3. Validate token status against axl-login-service tokenStatus API (or DB fallback)
-        const { activeToken, authServiceUnavailable } = await getActiveTokenByUserId(virtualId, token);
+        // 3. Validate token status against axl-login-service tokenStatus API — strictly no fallback
+        let isActive: boolean;
+        try {
+            isActive = await checkTokenStatus(virtualId, token);
+        } catch (statusError) {
+            return next(
+                new HttpException(503, 'Not able to connect with axl-login-service', {
+                    errorType: 'ServiceUnavailable',
+                    code: 'AUTH_SERVICE_UNAVAILABLE',
+                }),
+            );
+        }
 
-        if (!activeToken || activeToken !== token) {
-            if (authServiceUnavailable) {
-                return next(
-                    new HttpException(503, 'Auth service is currently unavailable', {
-                        errorType: 'ServiceUnavailable',
-                        code: 'AUTH_SERVICE_UNAVAILABLE',
-                    }),
-                );
-            }
+        if (!isActive) {
             return next(
                 new HttpException(401, 'User logged out', {
                     errorType: 'AuthenticationError',
