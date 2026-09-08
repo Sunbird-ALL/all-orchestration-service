@@ -16,9 +16,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
                 }),
             );
         }
-        console.log();
         // 1. Decrypt JWE token using shared encryption key
-        console.log(`******* calling jwtEncryptKey********`)
         const jwtEncryptionKey = getEncryptionKey();
 
         const authHeader = request.header('authorization');
@@ -31,10 +29,8 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
             );
         }
         const token = authHeader.split(' ')[1];
-        console.log(`******* calling jwtDecrypt********`)
+
         const jwtDecryptedToken = await jose.jwtDecrypt(token, jwtEncryptionKey);
-        console.log('******* jwtDecryptedToken********')
-        console.log(`jwtDecryptedToken: ${JSON.stringify(jwtDecryptedToken)}`);
         if (!jwtDecryptedToken.payload.jwtSignedToken) {
             return next(
                 new HttpException(400, 'Invalid token payload: Missing jwtSignedToken', {
@@ -45,9 +41,7 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
         }
 
         // 2. Verify inner JWS signature using UTF-8 encoded JOSE_SIGNIN_PRIVATE_KEY
-        console.log(`******* calling jwtSigninKey********`)
         const jwtSigninKey = getSigningKey();
-        console.log('******* jwtSigninKey********')
         const jwtSignedToken = String(jwtDecryptedToken.payload.jwtSignedToken);
         const verifiedToken = await jose.jwtVerify(jwtSignedToken, jwtSigninKey);
 
@@ -110,9 +104,6 @@ const verifyToken = async (request: Request, response: Response, next: NextFunct
                 }),
             );
         }
-        console.error(
-            `******* jwtDecrypt/jwtVerify failed: name=${(error as Error)?.name} message=${(error as Error)?.message}********`,
-        );
         return next(
             new HttpException(400, 'Invalid token', {
                 errorType: 'AuthenticationError',
