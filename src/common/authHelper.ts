@@ -2,7 +2,6 @@ import http from 'node:http';
 import https from 'node:https';
 import { createHash } from 'node:crypto';
 import * as jose from 'jose';
-import virtualId from '../mongo_module/models/user';
 
 export const getEncryptionKey = (): Uint8Array => {
     const encKeyStr = process.env.JOSE_ENCRYPTION_PRIVATE_KEY;
@@ -18,13 +17,24 @@ export const getSigningKey = (): Uint8Array => {
     return new TextEncoder().encode(signinKeyStr);
 };
 
-const AUTH_SERVICE_TIMEOUT_MS = Number(process.env.AXL_LOGIN_SERVICE_TIMEOUT_MS) || 5000;
-
 export class AuthServiceUnavailableError extends Error {
+    public readonly code?: string;
     constructor(message: string, public readonly cause?: unknown) {
         super(message);
         this.name = 'AuthServiceUnavailableError';
+        this.code = (cause as { code?: string } | undefined)?.code;
     }
+}
+
+function logAuthServiceEvent(event: string, fields: Record<string, unknown>): void {
+    console.error(
+        JSON.stringify({
+            level: 'error',
+            event,
+            ts: new Date().toISOString(),
+            ...fields,
+        }),
+    );
 }
 
 export const postJson = <T = any>(urlStr: string, body: unknown): Promise<T | null> => {
@@ -41,7 +51,6 @@ export const postJson = <T = any>(urlStr: string, body: unknown): Promise<T | nu
                         'Content-Type': 'application/json',
                         'Content-Length': Buffer.byteLength(data),
                     },
-                    timeout: AUTH_SERVICE_TIMEOUT_MS,
                 },
                 (res) => {
                     let responseBody = '';
@@ -49,69 +58,82 @@ export const postJson = <T = any>(urlStr: string, body: unknown): Promise<T | nu
                         responseBody += chunk;
                     });
                     res.on('end', () => {
+                        const statusCode = res.statusCode ?? 0;
+                        if (statusCode < 200 || statusCode >= 300) {
+                            logAuthServiceEvent('auth_service_unexpected_status', {
+                                url: urlStr,
+                                statusCode,
+                                bodySnippet: responseBody.slice(0, 200),
+                            });
+                            reject(
+                                new AuthServiceUnavailableError(
+                                    `Auth service responded with unexpected status ${statusCode}`,
+                                ),
+                            );
+                            return;
+                        }
                         try {
                             const parsed = JSON.parse(responseBody);
                             resolve(parsed);
                         } catch (parseErr) {
-                            console.error('Failed to parse JSON response from auth service:', parseErr);
+                            logAuthServiceEvent('auth_service_invalid_response', {
+                                url: urlStr,
+                                statusCode,
+                                bodySnippet: responseBody.slice(0, 200),
+                                error: parseErr instanceof Error ? parseErr.message : String(parseErr),
+                            });
                             reject(new AuthServiceUnavailableError('Auth service returned an invalid response', parseErr));
                         }
                     });
                 },
             );
-            req.on('timeout', () => {
-                req.destroy(new AuthServiceUnavailableError(`Auth service request timed out after ${AUTH_SERVICE_TIMEOUT_MS}ms`));
-            });
-            req.on('error', (err) => {
-                console.error('HTTP request error to auth service:', err.message);
+            req.on('error', (err: NodeJS.ErrnoException) => {
+                logAuthServiceEvent('auth_service_unreachable', {
+                    url: urlStr,
+                    errorCode: err.code ?? null,
+                    error: err.message,
+                });
                 reject(new AuthServiceUnavailableError('Auth service is unreachable', err));
             });
             req.write(data);
             req.end();
         } catch (err) {
-            console.error('Invalid URL or request setup:', err);
+            logAuthServiceEvent('auth_service_request_setup_failed', {
+                url: urlStr,
+                error: err instanceof Error ? err.message : String(err),
+            });
             reject(new AuthServiceUnavailableError('Auth service request could not be constructed', err));
         }
     });
 };
 
-export const getActiveTokenByUserId = async (
-    userId: number | string,
-    token?: string,
-): Promise<{ activeToken: string | null; authServiceUnavailable: boolean }> => {
-    const loginServiceUrl = process.env.AXL_LOGIN_SERVICE_URL;
-    let activeToken: string | null = null;
-    let authServiceUnavailable = false;
+// Checks whether `token` is the user's currently active session token, by asking
+// axl-login-service's tokenStatus API directly. Strictly no local fallback: either
+// axl-login-service answers true/false, or this throws AuthServiceUnavailableError.
+export const checkTokenStatus = async (userId: number | string, token: string): Promise<boolean> => {
+    const loginServiceUrl = process.env.AXL_LOGIN_SERVICE_URL || '';
 
-    if (loginServiceUrl) {
-        try {
-            const statusData: any = await postJson(loginServiceUrl, {
-                user_id: Number(userId) || userId,
-                token,
-            });
-            const isActive =
-                statusData?.responseObj?.responseDataParams?.data?.isActive ??
-                statusData?.data?.isActive ??
-                statusData?.isActive ??
-                false;
-            activeToken = isActive ? (token ?? null) : null;
-        } catch (fetchErr) {
-            console.error('Error fetching token status from auth service:', fetchErr);
-            authServiceUnavailable = fetchErr instanceof AuthServiceUnavailableError;
-        }
-    } else {
-        console.error('AXL_LOGIN_SERVICE_URL is not configured; skipping remote token status check');
-        authServiceUnavailable = true;
-    }
-
-    if (!activeToken) {
-        const user = await virtualId.findOne({
-            virtualId: Number(userId) || userId,
+    try {
+        const statusData: any = await postJson(loginServiceUrl, {
+            user_id: Number(userId) || userId,
+            token,
         });
-        if (user?.token) {
-            activeToken = user.token;
+        const isActive =
+            statusData?.responseObj?.responseDataParams?.data?.isActive ??
+            statusData?.data?.isActive ??
+            statusData?.isActive ??
+            false;
+        return Boolean(isActive);
+    } catch (err) {
+        logAuthServiceEvent('auth_service_check_failed', {
+            url: loginServiceUrl,
+            userId,
+            errorCode: err instanceof AuthServiceUnavailableError ? err.code ?? null : null,
+            error: err instanceof Error ? err.message : String(err),
+        });
+        if (err instanceof AuthServiceUnavailableError) {
+            throw err;
         }
+        throw new AuthServiceUnavailableError('Not able to connect with axl-login-service', err);
     }
-
-    return { activeToken, authServiceUnavailable };
 };
