@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import * as dotenv from 'dotenv';
 import cluster from 'cluster';
-import os from 'os';
 import compression from 'compression';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './src/swagger/swagger.config';
@@ -10,6 +9,7 @@ import sqlRouter, { sqlDatabaseConnection } from './src/sql_module';
 import mongoDbRouter, { mongodbConnection } from './src/mongo_module/modules';
 import HttpException from './src/common/http.Exception/http.Exception';
 import mongoose from 'mongoose';
+import { workerCount } from './src/common/worker-count';
 import {
   globalErrorHandler,
   handleErrorForResponse,
@@ -18,7 +18,7 @@ import {
 } from './src/common/middleware/api-error.middleware';
 dotenv.config();
 
-const numCPUs = os.cpus().length;
+const numCPUs = workerCount();
 
 if (cluster.isPrimary) {
   console.log(`Master ${process.pid} is running`);
