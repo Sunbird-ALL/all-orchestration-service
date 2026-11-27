@@ -166,7 +166,8 @@ export const checkTokenStatus = async (userId: number | string, token: string): 
         if (active && ttl > 0) {
             if (tokenStatusCache.size >= TOKEN_STATUS_CACHE_MAX_ENTRIES) {
                 // Drop the oldest entry (Map keeps insertion order).
-                tokenStatusCache.delete(tokenStatusCache.keys().next().value);
+                const oldest = tokenStatusCache.keys().next().value;
+                if (oldest !== undefined) tokenStatusCache.delete(oldest);
             }
             tokenStatusCache.set(cacheKey, Date.now() + ttl);
         }
